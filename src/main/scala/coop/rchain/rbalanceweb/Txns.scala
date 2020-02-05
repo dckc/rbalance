@@ -316,7 +316,7 @@ object RHOCTxnGraphClosure
         println( s"${k} -> ${adjustment}" )
         for (edges <- proof) {
           for (edge <- edges) {
-            proofWriter.write(s"${ix},$k,${edge.src.addr},${edge.weight},${edge.trgt.addr}\n")
+            proofWriter.write(s"${ix},$k,${edge.hash},${edge.src.addr},${edge.weight},${edge.trgt.addr}\n")
             ix += 1
           }
         }
