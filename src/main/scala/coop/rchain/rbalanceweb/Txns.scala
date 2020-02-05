@@ -309,11 +309,17 @@ object RHOCTxnGraphClosure
 
     val proofFile         = new File( pfFName )
     val proofWriter       = new BufferedWriter( new FileWriter( proofFile ) )
+    var ix = 0
     for( ( k, v ) <- adjustmentsMap ) {
       val ( balance, adjustment, proof ) = v
       if ( adjustment > 0.00000001 ) { // RHOC precision
         println( s"${k} -> ${adjustment}" )
-        proofWriter.write( s"$k, ${proof}\n" )
+        for (edges <- proof) {
+          for (edge <- edges) {
+            proofWriter.write(s"${ix},$k,${edge.src.addr},${edge.weight},${edge.trgt.addr}\n")
+            ix += 1
+          }
+        }
       }      
     }
 
