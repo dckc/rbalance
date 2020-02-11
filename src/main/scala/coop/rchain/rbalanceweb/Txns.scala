@@ -24,7 +24,8 @@ import coop.rchain.rbalance.transitive._
 trait EdgeT[Node] {
   def src       : Node
   def trgt      : Node
-  def weight    : Float
+  def weight    : Double
+  def timestamp : Int
   def hash      : String
   def blockId   : String
 
@@ -36,7 +37,8 @@ trait EdgeT[Node] {
 case class Edge[Node](
   override val src           : Node,
   override val trgt          : Node,
-  override val weight        : Float,
+  override val weight        : Double,
+  override val timestamp     : Int,
   override val hash          : String,
   override val blockId       : String,
   override val justification : Set[Edge[Node]]
@@ -44,12 +46,14 @@ case class Edge[Node](
 
 trait AddressT {
   def addr      : String
-  def balance   : Float
+  def balance   : List[Double]
 }
 
 case class Address( 
-  override val addr    : String, 
-  override val balance : Float
+  override val addr    : String,
+  // Because there are loops in the txn graph coming up with a purely functional solution will take extra thought
+  // So, i'm punting in the interest of time
+  var balance : List[Double],
 ) extends AddressT {
   override def equals( a : Any ) = {
     a match {
@@ -66,32 +70,83 @@ case class RHOCTxnIdentity(
 //  override val src           : Address,
 //  override val trgt          : Address,
   val addr                   : Address,
-  override val weight        : Float,
+  override val weight        : Double,
   override val hash          : String,
   override val blockId       : String,
   override val justification : Set[RHOCTxnEdge]
 ) extends RHOCTxnEdge {
   override def src = addr
   override def trgt = addr
+  override def timestamp = 0
 }
 
 case class RHOCTxnEdgeRep(
   override val src           : Address,
   override val trgt          : Address,
-  override val weight        : Float,
+  override val weight        : Double,
+  override val timestamp     : Int,
   override val hash          : String,
   override val blockId       : String,
-  override val justification : Set[RHOCTxnEdge]
-) extends RHOCTxnEdge
+  override val justification : Set[RHOCTxnEdge],
+  var moreJust               : Set[RHOCTxnEdge]
+) extends RHOCTxnEdge {
+  def shortenAddress( addr : String ) : String = {
+    s"${addr.take( 6 )}...${addr.drop( addr.length - 5 )}"
+  }
+  override def toString() : String = {
+    s"${shortenAddress( src.addr )} -${shortenAddress( hash )}: ${weight}-> ${shortenAddress( trgt.addr )}"
+  }
+  override def equals( a : Any ) = {
+    a match {
+      case RHOCTxnRep( _, _, _, `hash`, _, _ ) => true
+      case _ => false
+    }
+  }
+  override def hashCode = ( hash ).##
+}
 
 object RHOCTxnGraphClosure 
     extends JustifiedClosure[Address, RHOCTxnEdge] with InputCSVData {
   import AdjustmentConstants._
 
+  def sortTxnsByTimestamp( txn1 : RHOCTxnEdge, txn2 : RHOCTxnEdge ) = {
+    txn1.timestamp < txn2.timestamp
+  }
+
+  def sortChild( folks : List[RHOCTxnEdge], kinder : RHOCTxnEdge, pos : Int ) : Int = {
+    folks match {
+      case Nil => pos
+      case folk :: rFolks => {
+        if ( kinder.timestamp <= folk.timestamp ) {
+          pos
+        }
+        else {
+          sortChild( rFolks, kinder, pos + 1 )
+        }
+      }
+    }
+  }
+  def separateChildren( folks : List[RHOCTxnEdge], children : List[RHOCTxnEdge] ) : List[List[RHOCTxnEdge]] = {
+    children.foldLeft( folks.map( ( f ) => { List[RHOCTxnEdge]() } ) )(
+      ( acc, txn ) => {
+        val kIdx = sortChild( folks, txn, 0 )
+        val prefix = acc.take( kIdx - 1 )
+        acc.drop( kIdx - 1 ) match {
+          case fL :: rFl => {
+            prefix ++ List( fL ++ List( txn ) ) ++ rFl
+          }
+          case _ => {
+            throw new Exception( s"unexpected timestamp sorting ${kIdx} ${txn}" )
+          }
+        }
+      }
+    )
+  }
+
   // Use this initial edge to generate the Barcelona clique
   val barcelonaEdge : RHOCTxnEdge = {
     new RHOCTxnIdentity(
-      new Address( barcelonaAddr.toLowerCase, barcelonaTaint ),
+      new Address( barcelonaAddr.toLowerCase, List[Double]( barcelonaTaint ) ),
       barcelonaTaint,
       "scam",
       "scam",
@@ -102,7 +157,7 @@ object RHOCTxnGraphClosure
   // Use this initial edge to generate the Pithia clique
   val pithiaEdge : RHOCTxnEdge = {
     new RHOCTxnIdentity(
-      new Address( pithiaAddr.toLowerCase, pithiaTaint ),
+      new Address( pithiaAddr.toLowerCase, List[Double]( pithiaTaint ) ),
       pithiaTaint,
       "scam",
       "scam",
@@ -110,16 +165,16 @@ object RHOCTxnGraphClosure
     )
   }
 
-  def loadAndFormatWalletData() : Map[String,Float] = {
-    loadWalletData().foldLeft( new HashMap[String,Float]() )(
+  def loadAndFormatWalletData() : Map[String,Double] = {
+    loadWalletData().foldLeft( new HashMap[String,Double]() )(
       ( acc, walletArray ) => {
-        acc + ( walletArray( 0 ).toLowerCase -> walletArray( 1 ).toFloat )
+        acc + ( walletArray( 0 ).toLowerCase -> walletArray( 1 ).toDouble )
       }
     )
   }
 
-  var balancesD : Option[Map[String,Float]] = None
-  def balances() : Map[String,Float] = {
+  var balancesD : Option[Map[String,Double]] = None
+  def balances() : Map[String,Double] = {
     balancesD match {
       case None => {
         val balanceMap = loadAndFormatWalletData()
@@ -133,11 +188,13 @@ object RHOCTxnGraphClosure
   def loadAndFormatTxnData() : List[RHOCTxnEdge] = {
     for( txnArray <- loadTxnData() ) yield {
       RHOCTxnEdgeRep(
-        new Address( txnArray(4), 0 ),
-        new Address( txnArray(5), 0 ),
-        txnArray(6).toFloat,
+        new Address( txnArray(4), List[Double]( 0.0 ) ),
+        new Address( txnArray(5), List[Double]( 0.0 ) ),
+        txnArray(6).toDouble,
+        txnArray(2).toInt,
         txnArray(0),
         txnArray(1),
+        new HashSet[RHOCTxnEdge](),
         new HashSet[RHOCTxnEdge]()
       )
     }
@@ -147,11 +204,70 @@ object RHOCTxnGraphClosure
   def txnData() : List[RHOCTxnEdge] = {
     txnDataV match {
       case None => {
-        val txnD = loadAndFormatTxnData()
+        val txnD = barcelonaEdge :: pithiaEdge :: ( loadAndFormatTxnData().filter( ( t ) => { t.src != t.trgt } ) ).toSet.toList
         txnDataV = Some( txnD )
         txnD
       }
       case Some( txnD ) => txnD
+    }
+  }
+
+  def getAddrList( txns : List[RHOCTxnEdge] ) : List[Address] = {
+    val addrSrcs  : Set[Address]  = txnData().map( _.trgt ).toSet
+    val addrTrgts : Set[Address]  = txnData().map( _.trgt ).toSet
+    ( addrSrcs ++ addrTrgts ).toList
+  }
+
+  var addrListV : Option[List[Address]] = None
+  def addrList() : List[Address] = {
+    addrListV match {
+      case None => {
+        val addrL     : List[Address] = getAddrList( txnData() )
+        addrListV = Some( addrL )
+        addrL
+      }
+      case Some( addrL ) => addrL
+    }
+  }
+
+  def nodeStatement( addr : Address ) : String = {
+    "\"" + s"n${addr.addr}" + "\""
+  }
+  def edgeStatement( txn : RHOCTxnEdge ) : String = {
+    "\"" + s"n${txn.src.addr}" + "\"" + " -> " + "\"" + s"n${txn.trgt.addr}" + "\""
+  }
+
+  def getDotExpr( txns : List[RHOCTxnEdge] ) : String = {
+    val addrL = getAddrList( txns )
+    val addrsButLast = addrL.take( addrList().length - 2 )
+    val lastAddr = addrList.last
+    val txnsButLast = txns.take( txnData().length - 2 )
+    val lastTxn = txns.last
+    val nodeStmts = addrsButLast.foldLeft( "" )(
+      ( acc, addr ) => {
+        if ( acc == "" ) {
+          s"${nodeStatement( addr )}"
+        }
+        else {
+          s"${acc};\n${nodeStatement( addr )}"
+        }
+      }
+    ) + s";\n${nodeStatement( lastAddr )}"
+    val edgeStmts = txnsButLast.foldLeft( "" )(
+      ( acc, txn ) => { s"${acc};\n${edgeStatement( txn )}" }
+    ) + s";\n${edgeStatement( lastTxn )}"
+    s"digraph TaintRemoval {\n${nodeStmts}${edgeStmts}\n}"
+  }
+
+  var dotExprV : Option[String] = None
+  def dotExpr() : String = {
+    dotExprV match {
+      case None => {        
+        val dotExp = getDotExpr( txnData() )
+        dotExprV = Some( dotExp )
+        dotExp
+      }
+      case Some( dotExp ) => dotExp
     }
   }
 
@@ -162,20 +278,29 @@ object RHOCTxnGraphClosure
   // transaction divided by the sum of all the outgoing transactions.
 
   def nextRHOCTxnWeightedEdges( txn : RHOCTxnEdge ) : Set[RHOCTxnEdge] = {
-    txnData().filter( ( txnD ) => { txnD.src == txn.trgt } ) match {
-      case Nil     => new HashSet[RHOCTxnEdge]()
-      case progeny => {
-        val seed : Float = 0
-        val totalWeight = progeny.foldLeft( seed )( ( acc, t ) => { acc + t.weight } )
-        progeny.map(
-          ( t ) => {
-            RHOCTxnEdgeRep(
-              t.src,
-              t.trgt,
-              ( t.weight / totalWeight ),
-              t.hash,
-              t.blockId,
-              (new HashSet[RHOCTxnEdge]() + txn)
+    val parents = txnData().filter( ( txnD ) => { txnD.trgt == txn.src } ).sortWith( sortTxnsByTimestamp )
+    val progeny = txnData().filter( ( txnD ) => { txnD.src == txn.trgt } ).sortWith( sortTxnsByTimestamp )
+    ( parents, progeny ) match {
+      case ( _, Nil ) => new HashSet[RHOCTxnEdge]()      
+      case ( folks, children ) => {
+        val seed : Double = 0
+        val childGroups = separateChildren( folks, children )
+        childGroups.flatMap(
+          ( cG ) => {
+            val totalWeight = cG.foldLeft( seed )( ( acc, t ) => { acc + t.weight } )
+            cG.map( 
+              ( t ) => { 
+                RHOCTxnEdgeRep(
+                  t.src,
+                  t.trgt,
+                  ( t.weight / totalWeight ),
+                  t.timestamp,
+                  t.hash,
+                  t.blockId,
+                  (new HashSet[RHOCTxnEdge]() + txn),
+                  new HashSet[RHOCTxnEdge]()
+                ) 
+              } 
             )
           }
         ).toSet
@@ -200,52 +325,118 @@ object RHOCTxnGraphClosure
   // calculation of the closure.
 
   def nextRHOCTxnTaint( clique : List[RHOCTxnEdge] )( txn : RHOCTxnEdge ) : Set[RHOCTxnEdge] = {
-    val progeny : List[RHOCTxnEdge] = clique.filter( ( txnD ) => { txnD.src == txn.trgt } )
-    progeny.map(
-      ( t ) => {
-        val trgtTaint : Float = txn.trgt.balance * t.weight
-        //println( s"$t : $trgtTaint" )
-        RHOCTxnEdgeRep(
-          t.src,
-          new Address( t.trgt.addr, trgtTaint ),
-          trgtTaint,
-          t.hash,
-          t.blockId,
-          (new HashSet[RHOCTxnEdge]() + txn)
-        )
+    val parents = txnData().filter( ( txnD ) => { (txnD.trgt == txn.trgt) && ( txnD != txn ) } ).sortWith( sortTxnsByTimestamp )
+    val progeny = clique.filter( ( txnD ) => { txnD.src == txn.trgt } ).sortWith( sortTxnsByTimestamp )
+
+    ( parents, progeny ) match {
+      case ( _, Nil ) => new HashSet[RHOCTxnEdge]()      
+      case ( folks, children ) => {
+        txn.trgt.balance = List[Double]( txn.weight ) ++ folks.map( _.weight )
+        println( s"${txn} has ${folks.size} incoming edges and ${children.size} outgoing edges" )
+        println( s"and balance list ${txn.trgt.balance}" )
+        val seed : ( Int, Double, Set[RHOCTxnEdge] ) = ( 0, 0.0, new HashSet[RHOCTxnEdge]() )
+        val childGroups = separateChildren( folks, children )
+        println( s"split as ${childGroups}" )
+        childGroups.foldLeft( seed )(
+          ( acc, cG ) => {
+            val ( idx, carry, rslt ) = acc
+            if ( cG.size == 0 ) {
+              ( idx + 1, txn.trgt.balance( idx ) + carry , rslt )
+            }
+            else {
+              val cGtxns : Set[RHOCTxnEdge] = cG.map(
+                ( t ) => {
+                  val trgtTaint : Double = (txn.trgt.balance( idx ) + carry) * t.weight
+                  RHOCTxnEdgeRep(
+                    t.src,
+                    t.trgt,
+                    trgtTaint,
+                    t.timestamp,
+                    t.hash,
+                    t.blockId,
+                    (new HashSet[RHOCTxnEdge]() + txn),                    
+                    (new HashSet[RHOCTxnEdge]() ++ folks.toSet )
+                  )
+                }
+              ).toSet
+
+              ( idx + 1, 0.0, rslt ++ cGtxns )
+            }
+          }
+        )._3
       }
-    ).toSet
+    }
   }
 
-  def adjustmentsMap( adjustments : List[RHOCTxnEdge] ) : Map[String,( Float, Float, Set[List[RHOCTxnEdge]] )] = {
+  // def nextRHOCTxnTaint( clique : List[RHOCTxnEdge] )( addr : Address ) : Set[Address] = {
+  //   val parents = txnData().filter( ( txnD ) => { txnD.trgt == txn.trgt } ).sortWith( sortTxnsByTimestamp )
+  //   val progeny = clique.filter( ( txnD ) => { txnD.src == addr } ).sortWith( sortTxnsByTimestamp )
+
+  //   ( parents, progeny ) match {
+  //     case ( _, Nil ) => new HashSet[Address]()      
+  //     case ( incomingEdges, outgoingEdges ) => {
+  //       addr.balance = incomingEdges.map( ( f ) => { f.weight } )
+  //       println( s"${addr.addr} has ${incomingEdges.size} incoming edges and ${outgoingEdges.size} outgoing edges" )
+  //       println( s"and balance list ${addr.balance}" )
+  //       val seed : ( Int, Double, Set[Address] ) = ( 0, 0.0, new HashSet[Address]() )
+  //       val childGroups = separateOutgoingEdges( incomingEdges, outgoingEdges )
+  //       println( s"split as ${childGroups}" )
+  //       childGroups.foldLeft( seed )(
+  //         ( acc, cG ) => {
+  //           val ( idx, carry, rslt ) = acc
+  //           if ( cG.size == 0 ) {
+  //             ( idx + 1, txn.trgt.balance( idx ) + carry , rslt )
+  //           }
+  //           else {
+  //             val cGtxns : Set[Address] = cG.map(
+  //               ( t ) => {
+  //                 val trgtTaint : Double = (addr.balance( idx ) + carry) * t.weight
+  //                 Address( t.trgt, List[Double]( trgtTaint ) )
+  //               }
+  //             ).toSet
+
+  //             ( idx + 1, 0.0, rslt ++ cGtxns )
+  //           }
+  //         }
+  //       )._3
+  //     }
+  //   }
+  // }
+
+  def adjustmentsMap( adjustments : List[RHOCTxnEdge] ) : Map[String,( Double, Double, Set[List[RHOCTxnEdge]] )] = {
     val empty : Set[List[RHOCTxnEdge]] = new HashSet[List[RHOCTxnEdge]]()
-    val seed : Map[String,( Float, Float, Set[List[RHOCTxnEdge]] )] = new HashMap[String,( Float, Float, Set[List[RHOCTxnEdge]] )]()
+    val seed : Map[String,( Double, Double, Set[List[RHOCTxnEdge]] )] = new HashMap[String,( Double, Double, Set[List[RHOCTxnEdge]] )]()
     balances().foldLeft( seed )(
       ( acc, entry ) => {
         val ( addr, balance ) = entry
-        val addrCreditAdj : List[RHOCTxnEdge] = adjustments.filter( ( e ) => e.trgt.addr == addr )
-        val addrDebitAdj : List[RHOCTxnEdge] = adjustments.filter( ( e ) => e.src.addr == addr )
+        val addrCreditAdj : List[RHOCTxnEdge] = adjustments.filter( ( e ) => e.trgt.addr == addr ).sortWith( sortTxnsByTimestamp )
+        val addrDebitAdj : List[RHOCTxnEdge] = adjustments.filter( ( e ) => e.src.addr == addr ).sortWith( sortTxnsByTimestamp )
         ( addrCreditAdj, addrDebitAdj ) match {
           case ( Nil, _ ) => {
             println( s"$addr not in clique" )
-            val adj = ( balance, 0.toFloat, empty )
+            val adj = ( balance, 0.toDouble, empty )
             acc + ( addr -> adj )
           }
-          case ( inEdges, outEdges ) => {
-            val adjSeed : ( Float, Set[List[RHOCTxnEdge]] ) = ( 0, empty )
-            val adj = inEdges.foldLeft( adjSeed )(
-              ( adjAcc, e ) => {
-                val ( adjAccW, adjAccPaths ) = adjAcc
-                ( adjAccW + e.weight, adjAccPaths.asInstanceOf[Set[List[RHOCTxnEdge]]] ++ e.paths().asInstanceOf[Set[List[RHOCTxnEdge]]] )
-              }
-            )
-            val debit = outEdges.foldLeft( 0.asInstanceOf[Float] )( ( dAcc, e ) => { dAcc + e.weight } )
-            val totalAdjustment = adj._1 - debit
+          case ( inEdges, outEdges ) => {            
+            val childGroups : List[List[RHOCTxnEdge]] = separateChildren( inEdges, outEdges )
+
+            val seed : ( Int, Double, Set[List[RHOCTxnEdge]] )= ( 0, 0.0, new HashSet[List[RHOCTxnEdge]]() )
+            val ( idx, totalAdjustment, proofs ) =
+              childGroups.foldLeft( seed )(
+                ( acc, cG ) => {
+                  val ( idx, adjustment, pfs ) = acc
+                  val groupParent = inEdges( idx )
+                  val credit = groupParent.weight
+                  val debit = cG.foldLeft( 0.asInstanceOf[Double] )( ( dAcc, t ) => { dAcc + t.weight } )
+                  val nPfs : Set[List[RHOCTxnEdge]] = groupParent.paths().asInstanceOf[Set[List[RHOCTxnEdge]]]
+
+                  ( idx + 1, adjustment + ( credit - debit ), pfs ++ nPfs )
+                }
+              )
+
             println( s"$addr in clique with" )
-            println( s"${inEdges.length} incoming edges contributing ${adj._1}") 
-            println( s"${outEdges.length} outgoing edges debiting ${debit}" ) 
-            println( s"giving total adjustment ${totalAdjustment}" )
-            val balAdj = ( balance, totalAdjustment, adj._2 )
+            
+            val balAdj = ( balance, totalAdjustment, proofs )
             acc + ( addr -> balAdj )
           }
         }
@@ -254,7 +445,7 @@ object RHOCTxnGraphClosure
   }
 
   def reportAdjustmentsMap(
-    adjustmentsMap : Map[String,( Float, Float, Set[List[RHOCTxnEdge]] )],
+    adjustmentsMap : Map[String,( Double, Double, Set[List[RHOCTxnEdge]] )],
     adjFileName : String, proofFileName : String,
     dir : String
   ) : Unit = {
@@ -273,23 +464,41 @@ object RHOCTxnGraphClosure
       }
     )
     val nonDust =
-      adjustmentsMap.foldLeft( ( 0, 0.toFloat, List[(String,Float)]() ) )(
+      adjustmentsMap.foldLeft( ( 0, 0.toDouble, List[(String,Double)]() ) )(
         ( acc, entry ) => {
           val ( k, ( balance, adjustment, pf ) ) = entry
           if ( adjustment > 1 ) {
             val ( count, total, addrs ) = acc
             val biglyHit = ( k, balance )
-            ( count + 1, total + adjustment, addrs ++ List[(String,Float)](biglyHit) )
+            ( count + 1, total + adjustment, addrs ++ List[(String,Double)](biglyHit) )
           }
           else acc
         }
       )
+    val adjZeros =
+      adjustmentsMap.foldLeft( ( 0, 0.toDouble, List[(String,Double)]() ) )(
+      ( acc, entry ) => {
+        val ( k, ( balance, adjustment, pf ) ) = entry
+        if ( ( balance == 0 ) && ( adjustment > 0.000000001 ) ) {
+          val ( count, total, addrs ) = acc
+          val oddlyHit = ( k, adjustment )
+          ( count + 1, total + adjustment, addrs ++ List[(String,Double)]( oddlyHit ) )
+        }
+        else acc
+      }
+    )
+    
 
     println( s"RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" )
+    println( "\n\n" )
     println( s"Total number of adjustments ${numberOfAdjustments}" )
-    println( s"Out of ${adjustmentsMap.size}" )
+    println( s"Out of ${adjustmentsMap.size}\n\n" )
     println( s"Total adjustments that are not dust ${nonDust._1} adding to ${nonDust._2}" )
     for( addr <- nonDust._3 ) { println( s"${addr._1}" ) }
+    println( "\n\n" )
+    println( s"Total adjustments on addresses with zero balance ${adjZeros._1} adding to ${adjZeros._2}" )
+    for( addr <- adjZeros._3 ) { println( s"${addr}" ) }
+    println( "\n\n" )
     println( s"RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" )
 
     // proofs were being written to adjustment file... lol!
@@ -327,7 +536,7 @@ object RHOCTxnGraphClosure
     proofWriter.close()
   }
 
-  def reportAdjustmentsMap( adjustmentsMap : Map[String,( Float, Float, Set[List[RHOCTxnEdge]] )] ) : Unit = {
+  def reportAdjustmentsMap( adjustmentsMap : Map[String,( Double, Double, Set[List[RHOCTxnEdge]] )] ) : Unit = {
     reportAdjustmentsMap( adjustmentsMap, adjustmentsFile, proofFile, reportingDir )
   }
 
@@ -351,6 +560,26 @@ object RHOCTxnGraphClosure
     cliqueWriter.close()
   }
 
+  // Exploration
+  def findTxns( clique : List[RHOCTxnEdge] )( addr : String ) : List[RHOCTxnEdge] = {
+    clique.filter( ( txn ) => { ( txn.src == addr ) || ( txn.trgt == addr ) } )
+  }
+
+  def findTxn( clique : List[RHOCTxnEdge] )( hash : String ) : Option[RHOCTxnEdge] = {
+    clique.filter( ( txn ) => { txn.hash == hash } ) match {
+      case Nil => None
+      case txn :: Nil => Some( txn )
+      case txns => throw new Exception( s"more than one transaction with the same hash: $hash \n txns: $txns" )
+    }
+  }
+
+  def findTxnProof( clique : List[RHOCTxnEdge] )( hash : String ) : Set[List[RHOCTxnEdge]] = {
+    findTxn( clique )( hash ) match {
+      case None => new HashSet[List[RHOCTxnEdge]]
+      case Some( txn ) => txn.paths().asInstanceOf[Set[List[RHOCTxnEdge]]]
+    }
+  }
+
   object BarcelonaClique extends JustifiedClosure[Address, RHOCTxnEdge] {
     override def next = nextRHOCTxnTaint( BarcelonaWeights )
     override def key = _.trgt
@@ -358,13 +587,14 @@ object RHOCTxnGraphClosure
     def getClique( taintedEdge : RHOCTxnEdge ) : List[RHOCTxnEdge] = { taintedClique( close( taintedEdge ) ) }
 
     val BarcelonaAdjustments = getClique( barcelonaEdge )
+    val BarcelonaMap = adjustmentsMap( BarcelonaAdjustments )
 
     def reportAdjustments( ) : Unit = {
       val adjFName = annotateFileName( AdjustmentConstants.adjustmentsFile, "Barcelona" )
       val pfFName = annotateFileName( AdjustmentConstants.proofFile, "Barcelona" )
 
       reportAdjustmentsMap(
-        adjustmentsMap( BarcelonaAdjustments ),
+        BarcelonaMap,
         adjFName,
         pfFName,
         reportingDir
@@ -379,16 +609,298 @@ object RHOCTxnGraphClosure
     def getClique( taintedEdge : RHOCTxnEdge ) : List[RHOCTxnEdge] = { taintedClique( close( taintedEdge ) ) }
 
     val PithiaAdjustments = getClique( pithiaEdge )
+    val PithiaMap = adjustmentsMap( PithiaAdjustments )
 
     def reportAdjustments( ) : Unit = {
       val adjFName = annotateFileName( adjustmentsFile, "Pithia" )
       val pfFName = annotateFileName( proofFile, "Pithia" )
       reportAdjustmentsMap(
-        adjustmentsMap( PithiaAdjustments ),
+        PithiaMap,
         adjFName,
         pfFName,
         reportingDir
       )
+    }
+  }
+
+  object NaiveCalculation {
+    import scala.collection.mutable.Map
+    import scala.collection.mutable.HashMap
+    import scala.collection.mutable.Queue
+
+    trait StateT[RHOCTxnEdge] {
+      def edgeTaintMemo    : Map[RHOCTxnEdge,Double]
+      def edgeWeightMemo   : Map[RHOCTxnEdge,Double]
+      def addrTaintMemo    : Map[Address,Double]
+      def edgeTaintCycles  : Map[RHOCTxnEdge,Queue[RHOCTxnEdge]]
+      def edgeWeightCycles : Map[RHOCTxnEdge,Queue[RHOCTxnEdge]]
+      def addrCycles       : Map[Address,Queue[Address]]
+    }
+
+    case class State[RHOCTxnEdge](
+      override val edgeTaintMemo    : Map[RHOCTxnEdge,Double],
+      override val edgeWeightMemo   : Map[RHOCTxnEdge,Double],
+      override val addrTaintMemo    : Map[Address,Double],
+      override val edgeTaintCycles  : Map[RHOCTxnEdge,Queue[RHOCTxnEdge]],
+      override val edgeWeightCycles : Map[RHOCTxnEdge,Queue[RHOCTxnEdge]],
+      override val addrCycles       : Map[Address,Queue[Address]]
+    ) extends StateT[RHOCTxnEdge]
+
+    def getCup( addr : Address ) : List[RHOCTxnEdge] = {
+      txnData().filter( ( txnD ) => { txnD.trgt == addr } ).sortWith( sortTxnsByTimestamp )
+    }
+    def getCap( addr : Address ) : List[RHOCTxnEdge] = {
+      txnData().filter( ( txnD ) => { txnD.src == addr } ).sortWith( sortTxnsByTimestamp )
+    }
+    def cupNCap( addr : Address ) : ( List[RHOCTxnEdge], List[RHOCTxnEdge] ) = { ( getCup( addr ), getCap( addr ) ) }
+
+    def depositBounds( txn : RHOCTxnEdge ) : ( Option[RHOCTxnEdge], Option[RHOCTxnEdge] ) = {
+      val cup = getCup( txn.src )
+      val beforeT = 
+        cup.filter( ( t ) => { t.timestamp <= txn.timestamp } ) match {
+          case Nil => None
+          case prefix => Some( prefix.last )
+        }
+      val afterT = 
+        cup.filter( ( t ) => { t.timestamp > txn.timestamp } ) match {
+          case Nil => None
+          case u :: _ => Some( u )
+        }
+      ( beforeT, afterT )
+    }
+
+    def shareDeposit( txn : RHOCTxnEdge ) : List[RHOCTxnEdge] = {
+      val dB = depositBounds( txn )
+      getCap( txn.src ).filter( ( t ) => { depositBounds( t ) == dB } )
+    }
+
+    def weight( txn : RHOCTxnEdge, state : State[RHOCTxnEdge] ) : Double = {
+      def baseCase( txnB : RHOCTxnEdge, stateB : State[RHOCTxnEdge] ) : Double = {        
+        val w : Double =
+          txnB match {
+            case idTxn : RHOCTxnIdentity => idTxn.weight
+            case tRep@RHOCTxnEdgeRep( s, _, tw, _, _, _, _, _ ) => {
+              shareDeposit( tRep ) match {
+                case Nil => throw new Exception( s"impossible cap: ${txn}" )
+                case t :: Nil => 1.0
+                case rTs => {
+                  if ( feedback > 0 ) { println( s"shareDeposits of ${txn} is ${rTs}" ) }
+                  tw / rTs.foldLeft( 0.0 )( ( acc, t ) => { acc + t.weight } )
+                }
+              }
+            }
+          }
+        stateB.edgeWeightMemo += ( txnB -> w )
+        if ( feedback > 0 ) { println( s"w is calculated as ${w}" ) }
+        w
+      }
+
+      ( state.edgeWeightMemo.get( txn ) ) match {
+        case None => { baseCase( txn, state ) }        
+        case Some( w ) => w
+      }
+    }
+    def taintOut(
+      txn1       : RHOCTxnEdge, txn2 : RHOCTxnEdge, 
+      cap        : List[RHOCTxnEdge],
+      state      : State[RHOCTxnEdge]
+    ) : Double = {
+      cap.filter( 
+        ( txn ) => { ( txn1.timestamp <= txn.timestamp ) && ( txn.timestamp <= txn2.timestamp ) } 
+      ).foldLeft( 0.0 )( ( acc, u ) => acc + taint( u, state ) )
+    }
+    def taintOut(
+      txn1       : RHOCTxnEdge,
+      cap        : List[RHOCTxnEdge],
+      state      : State[RHOCTxnEdge]
+    ) : Double = {
+      cap.filter( 
+        ( txn ) => { ( txn1.timestamp <= txn.timestamp ) } 
+      ).foldLeft( 0.0 )( ( acc, u ) => acc + taint( u, state ) )
+    }
+    def taint( 
+      txn        : RHOCTxnEdge,
+      state      : State[RHOCTxnEdge]
+    ) : Double = {      
+      def baseCase( txnB : RHOCTxnEdge, tCycle : Queue[RHOCTxnEdge], stateB : State[RHOCTxnEdge] ) : Double = {
+        depositBounds( txnB ) match {
+          case ( None, _ ) => 0.0 // This is a pure source
+          case ( Some( l ), _ ) => {
+            tCycle += txnB
+            val t = 
+              if ( !( tCycle.contains( l ) ) ) {
+                //taint( txnB.src, cup, stateB )
+                if ( feedback > 0 ) { println( s"lower bound of ${txnB} is ${l}" ) }
+                tCycle += l
+                weight( txnB, stateB ) * taint( l, stateB )
+              }
+              else {
+                weight( txnB, stateB ) * l.weight
+              }
+            if ( feedback > 2 ) { println( s"t is calculated as ${t}" ) }
+            stateB.edgeTaintMemo += ( txn -> t )
+            t
+          }
+        }
+      }
+      txn match {
+        case RHOCTxnIdentity( _, w, _, _, _ ) => { w }
+        case _ => {
+          ( state.edgeTaintMemo.get( txn ), state.edgeTaintCycles.get( txn ) ) match {
+            case ( None, None ) => {
+              if ( feedback > 0 ) { println( s"requesting taint for ${txn} for the first time" ) }
+              val tCycle = new Queue[RHOCTxnEdge]()
+              state.edgeTaintCycles += ( txn -> tCycle )
+              //baseCase( txn, getCup( txn.src ), state )
+              baseCase( txn, tCycle, state )
+            }
+            case ( None, Some( tCycle ) ) => {
+              if ( feedback > 0 ) { println( s"cyclicly requesting taint for ${txn} with cycle length ${tCycle.length}" ) }
+              baseCase( txn, tCycle, state )
+            }
+            case ( Some( t ), _ ) => t
+          }
+        }
+      }
+    }
+    
+    def taint(
+      addr       : Address,
+      state      : State[RHOCTxnEdge]
+    ) : Double = {
+      val cup = getCup( addr )      
+      val bound = 
+        cup.filter(
+          ( t ) => {
+            t match {
+              case txnId : RHOCTxnIdentity => { t.src == addr }
+              case _ => false
+            }
+          }
+        )
+      if ( bound.length == 0 ) {
+        taint( addr, cup, state )
+      }
+      else {
+        bound( 0 ).weight
+      }
+    }
+
+    def taint(
+      addr       : Address,
+      cup        : List[RHOCTxnEdge],
+      state      : State[RHOCTxnEdge]
+    ) : Double = {
+      val cupLen = cup.length
+      def baseCase( addrB : Address, cupB : List[RHOCTxnEdge], stateB : State[RHOCTxnEdge] ) = {        
+        val cap = getCap( addrB )
+        if ( feedback > 2 ) { println( s"cup size is ${cup.size}" ) }
+        if ( feedback > 2 ) { println( s"cap size is ${cap.size}" ) }
+        val cupBLen = cupB.length
+        val t =
+          cupB.foldLeft( ( 0, 0.0 ) )(
+            ( acc, inTxnL ) => {
+              val ( idx, tnt ) = acc
+              if ( idx < ( cupBLen - 1 ) ) {
+                val inTxnR = cup( idx + 1 )
+                val inTxnLTnt = taint( inTxnL, state )
+                val inTxnLOut = taintOut( inTxnL, inTxnR, cap, stateB )
+                val cTnt = inTxnLTnt - inTxnLOut
+
+                ( idx + 1, tnt + cTnt )
+              }
+              else {
+                val inTxnLTnt = taint( inTxnL, stateB )
+                val inTxnLOut = taintOut( inTxnL, cap, state )
+                val cTnt = inTxnLTnt - inTxnLOut
+
+                ( idx + 1, tnt + cTnt )
+              }
+            }
+          )
+        if ( feedback > 2 ) { println( s"t is calculated as ${t._1}" ) }
+        state.addrTaintMemo += ( addrB -> t._1 )
+        t._1
+      }
+
+      ( state.addrTaintMemo.get( addr ), state.addrCycles.get( addr ) ) match {
+        case ( None, None ) => {
+          if ( feedback > 0 ) { println( s"requesting taint for ${addr.addr} for the first time" ) }
+          state.addrCycles += ( addr -> new Queue[Address]() )
+          baseCase( addr, cup, state )
+        }
+        case ( None, Some( cycle ) ) => {
+          if ( cycle.contains( addr ) ) {
+            if ( feedback > 0 ) { println( s"cyclicly requesting taint for ${addr.addr} with cycle.length ${cycle.length}" ) }
+            // BUGBUG -- needs to use timestamp ordering
+            val nCup = cup.filter( ( t ) => { !( cycle.contains( t.trgt ) ) } )
+            if ( nCup.length == cupLen ) {
+              0.0
+            }
+            else {
+              baseCase( addr, nCup, state )
+            }
+          }
+          else {
+            cycle += addr
+            baseCase( addr, cup, state )
+          }
+        }
+        case ( Some( t ), _ ) => t
+      }
+    }
+
+    object Utils {        
+      def freshState() : State[RHOCTxnEdge] = {
+        val edgeTaintMemo    : Map[RHOCTxnEdge,Double]             = new HashMap[RHOCTxnEdge,Double]()
+        val edgeWeightMemo   : Map[RHOCTxnEdge,Double]             = new HashMap[RHOCTxnEdge,Double]()
+        val addrTaintMemo    : Map[Address,Double]                 = new HashMap[Address,Double]()
+        val edgeTaintCycles  : Map[RHOCTxnEdge,Queue[RHOCTxnEdge]] = new HashMap[RHOCTxnEdge,Queue[RHOCTxnEdge]]()
+        val edgeWeightCycles : Map[RHOCTxnEdge,Queue[RHOCTxnEdge]] = new HashMap[RHOCTxnEdge,Queue[RHOCTxnEdge]]()
+        val addrCycles       : Map[Address,Queue[Address]]         = new HashMap[Address,Queue[Address]]()
+
+        State( edgeTaintMemo, edgeWeightMemo, addrTaintMemo, edgeTaintCycles, edgeWeightCycles, addrCycles )
+      }
+      val state : State[RHOCTxnEdge] = freshState()
+    }
+
+    def makeDotFile( txns : List[RHOCTxnEdge] ) : Unit = {
+      val dotDir = AdjustmentConstants.reportingDir
+      val dotFileName = annotateFileName( AdjustmentConstants.dotFile, "Combined" )
+      val dotFName          = s"${dotDir}/${dotFileName}"
+
+      val dotFile   = new File( dotFName )
+      val dotWriter = new BufferedWriter( new FileWriter( dotFile ) )
+
+      dotWriter.write( s"${getDotExpr( txns )}" )
+      dotWriter.flush()
+      dotWriter.close()
+    }
+
+    def makeDotFile() : Unit = {
+      makeDotFile( txnData() )
+    }
+    
+    def reportAdjustments( ) : Unit = {
+      val adjDir = AdjustmentConstants.reportingDir
+      val adjFileName = annotateFileName( AdjustmentConstants.adjustmentsFile, "Combined" )
+      //      val pfFileName = annotateFileName( AdjustmentConstants.proofFile, "Combined" )
+      val adjFName          = s"${adjDir}/${adjFileName}"
+      //      val pfFName           = s"${adjDir}/${proofFileName}"
+
+      val adjustmentsFile   = new File( adjFName )
+      val adjustmentsWriter = new BufferedWriter( new FileWriter( adjustmentsFile ) )
+
+      for( ( addr, balance ) <- balances() ) {
+        val address = new Address( addr.toLowerCase(), List[Double]( 0.0 ) )
+        val adjustment = taint( address, Utils.state )
+        if ( adjustment > 0.00000001 ) { // RHOC precision
+          if ( feedback > 0 ) { println( s"${addr} -> ${adjustment}, ${balance}" ) }
+          adjustmentsWriter.write( s"${addr}, ${balance}, ${adjustment}\n" )
+        }
+      }
+      adjustmentsWriter.flush()
+      adjustmentsWriter.close()
     }
   }
 }
