@@ -1,7 +1,6 @@
 from __future__ import print_function
+from decimal import Decimal as D, localcontext
 import csv
-
-rhoc8 = 10 ** 8
 
 
 class DB(object):
@@ -11,6 +10,12 @@ class DB(object):
           addr text, bal int, contract int,
           primary key(addr)
         )''',
+        '''
+        create table taint (
+          addr text, bal int, contract int,
+          primary key(addr)
+        )
+        ''',
         '''
         create table genesis (
           addr text, bal int, contract int,
@@ -50,8 +55,22 @@ class DB(object):
         return [d[0] for d in cur.description], cur.fetchall()
 
 
-def show(fmt, hd, data):
-    for ix, (addr, rhoc, rev, delta) in enumerate(data):
+def show(fmt, hd, data,
+         decimals=0):
+    q = D(10) ** -decimals
+    for ix, row in enumerate(data):
         if ix == 0:
             print(fmt.format(*hd))
-        print(fmt.format(addr, rhoc / rhoc8, rev / rhoc8, delta / rhoc8))
+        addr = row[0]
+        nums = [(D(n) / 10 ** decimals).quantize(q) for n in row[1:]]
+        print(fmt.format(addr, *nums))
+
+
+def mdtable(lines):
+    for line in lines:
+        if not line.strip().startswith('|'):
+            continue
+        if '----' in line:
+            continue
+        row = line.split('|')[1:-1]
+        yield [cell.strip() for cell in row]
