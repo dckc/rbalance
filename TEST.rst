@@ -1,9 +1,8 @@
 Preface: DB Setup
 =================
 
-The python standard library includes `sqlite`__::
-
-__ https://www.sqlite.org/index.html
+The python standard library includes `sqlite
+<https://www.sqlite.org/index.html>`_ etc.::
 
     >>> from __future__ import print_function
     >>> from decimal import Decimal as D
@@ -23,9 +22,8 @@ We have a few functions to build an audit DB::
 RHOC Distribution
 =================
 
-Let's label some addresses based on `RHOC Distribution`__.
-
-__ https://github.com/rchain/reference/blob/master/finance/rhoc.md
+Let's label some addresses based on `RHOC Distribution
+<https://github.com/rchain/reference/blob/master/finance/rhoc.md>`_.
 
     >>> db.sql('''create table addrbook (addr text, label text)''')
     >>> db.sql('''insert into addrbook (addr, label)
@@ -37,9 +35,9 @@ __ https://github.com/rchain/reference/blob/master/finance/rhoc.md
 Scam Addresses
 ==============
 
-`Important: Scam wallet addresses`__ May 3, 2019
-
-__ https://blog.rchain.coop/blog/2019/05/03/mitigating-the-barcelona-attack/
+`Important: Scam wallet addresses
+<https://blog.rchain.coop/blog/2019/05/03/mitigating-the-barcelona-attack/>`_
+May 3, 2019
 
     >>> scam = [[t.strip() for t in line.split('  ', 1)]
     ...         for line in '''
@@ -123,9 +121,7 @@ What are the top 10?
      (u'0xf15230cba5b211b7cb6a4ae7cfc5a84e9cb6865d', 1420881000000000),
      (u'0xbee7cce5b6e2eb556219eef8f3061aa9ff0630e9', 1260711500000000)]
 
-And from `Ian Feb 13`__:
-
-__ https://discordapp.com/channels/375365542359465989/454113117257859073/677385362443730944
+And from `Ian Feb 13 <https://discordapp.com/channels/375365542359465989/454113117257859073/677385362443730944>`_:
 
     >>> db.sql('''insert into addrbook (addr, label)
     ...           values ('0x287550958be9d74d7f7152c911ba0b71801153a8', 'Token Sale Wallet')''')
@@ -165,6 +161,9 @@ And from etherscan
 
 Feb 11 BOD Resolution: Tainted RHOC Amendment
 =============================================
+
+cf. `Feb 11 board minutes
+<https://raw.githubusercontent.com/rchain/board/master/2020/02-11/README.md>`_.
 
     >>> feb11 = 'https://raw.githubusercontent.com/rchain/board/master/2020/02-11/README.md'
     >>> ea = audit.mdtable(urllib2.urlopen(feb11))
@@ -231,6 +230,8 @@ Minutes say "For a total recovery of 67,119,258.36 RHOC." Does this check out?
 
 Genesis REV Wallets Proposal
 ============================
+
+`wallets.txt <https://raw.githubusercontent.com/rchain/rchain/dev/wallets.txt>`_:
 
     >>> genesis_addr = 'https://raw.githubusercontent.com/rchain/rchain/dev/wallets.txt'
     >>> db.load('genesis', csv.reader(urllib2.urlopen(genesis_addr)))
