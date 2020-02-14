@@ -1,5 +1,5 @@
 from __future__ import print_function
-from decimal import Decimal as D, localcontext
+from decimal import Decimal as D
 import csv
 
 
