@@ -5,11 +5,11 @@ The python standard library includes `sqlite`__::
 
 __ https://www.sqlite.org/index.html
 
-    >>> import sqlite3
-    >>> from pprint import pprint, pformat
     >>> from __future__ import print_function
-    >>> import urllib2
     >>> from decimal import Decimal as D
+    >>> from pprint import pprint, pformat
+    >>> import sqlite3
+    >>> import urllib2
 
 We have a few functions to build an audit DB::
 
