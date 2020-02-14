@@ -247,6 +247,23 @@ What are the top 10?
     >>> top_rhoc == top_rev
     True
 
+How does the snapshot supply compare to the genesis supply? @ian
+writes "When I compare the sum of all RHOC wallet balances in block
+9371743 to the genesis wallet candidate, there is a difference of only
+0.00000288 REV. This tiny discrepancy is because balance adjustments
+(from the scam RHOC) were determined from transaction history on
+Etherdelta, who reports a different number of significant digits. RHOC
+in wallets.txt is reported with 8 decimals."
+
+    >>> pprint(db.query('''
+    ... select tot_rhoc, tot_rev, tot_rev - tot_rhoc delta
+    ... from (
+    ...   select (select sum(bal) from snapshot) as tot_rhoc
+    ...        , (select sum(bal) from genesis) as tot_rev
+    ... )'''))
+    (['tot_rhoc', 'tot_rev', 'delta'],
+     [(100000000000000000, 100000000000000288, 288)])
+
 What are the RHOC and REV balances of scam addresses and other known addresses?
     >>> audit.show('{0:<8} {1:<44} {2:>20} {3:>20} {4:>20}', *db.query('''
     ... select substr(bk.addr, 1, 7) addr, bk.label, s.bal bal_rhoc, g.bal bal_rev, g.bal - s.bal delta
