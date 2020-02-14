@@ -56,14 +56,15 @@ class DB(object):
 
 
 def show(fmt, hd, data,
+         labels=1,
          decimals=0):
     q = D(10) ** -decimals
     for ix, row in enumerate(data):
         if ix == 0:
             print(fmt.format(*hd))
-        addr = row[0]
-        nums = [(D(n) / 10 ** decimals).quantize(q) for n in row[1:]]
-        print(fmt.format(addr, *nums))
+        txt = list(l or '' for l in row[:labels])
+        nums = [(D(n) / 10 ** decimals).quantize(q) for n in row[labels:]]
+        print(fmt.format(*(txt + nums)))
 
 
 def mdtable(lines):
