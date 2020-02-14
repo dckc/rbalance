@@ -193,8 +193,9 @@ Feb 11 BOD Resolution: Tainted RHOC Amendment
 How do snapshot balances compare to taint balances?
 
     >>> audit.show('{0:<44} {1:>18} {2:>18} {3:>18}', *db.query('''
-    ... select t.addr, s.bal bal_rhoc, t.bal bal_taint, t.bal - s.bal as delta
+    ... select coalesce(bk.label, t.addr) addr, s.bal bal_rhoc, t.bal bal_taint, t.bal - s.bal as delta
     ... from taint t join snapshot s on s.addr = t.addr
+    ... left join addrbook bk on bk.addr = t.addr
     ... where delta != 0
     ... '''), decimals=8)
     addr                                                   bal_rhoc          bal_taint              delta
