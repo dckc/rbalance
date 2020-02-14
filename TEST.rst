@@ -329,28 +329,8 @@ How do genesis balances differ from snapshot balances?
     ...   left join (select 'feb 11 taint' label, t.* from taint t) t on t.addr = adj.addr
     ...   order by abs(delta) desc, addr
     ... '''))
-    addr                                                     bal_rhoc              bal_rev                delta
-    Reserve Wallet 0x1c73d                         274664038.37716800                 0E-8  -274664038.37716800
-    Current operation 0xd35a2                       77932217.80308682                 0E-8   -77932217.80308682
-    Token Sale Wallet 0x28755                       31176931.98495265                 0E-8   -31176931.98495265
-    feb 11 taint 0x62917                            21088740.00000000     1588740.00000000   -19500000.00000000
-    feb 11 taint 0x583c3                            14838673.35645073                 0E-8   -14838673.35645073
-    new REV 0xf1523                                 14208810.00000000                 0E-8   -14208810.00000000
-    feb 11 taint 0xaa9bd                             8927500.00000000                 0E-8    -8927500.00000000
-    feb 11 taint 0x44d37                             6466991.46410000                 0E-8    -6466991.46410000
-    feb 11 taint 0x3198a                             4315002.00000000                 0E-8    -4315002.00000000
-    feb 11 taint 0xbdcbf                             5122041.08255400     1059541.08000000    -4062500.00255400
-    Research Wallet 0x821aa                          4000000.00000000                 0E-8    -4000000.00000000
-    feb 11 taint 0xdcb05                             3400500.00000000                 0E-8    -3400500.00000000
-    new REV 0x4c8c0                                   783513.78500000                 0E-8     -783513.78500000
-    feb 11 taint 0xfd9b2                              364784.00000000                 0E-8     -364784.00000000
-    feb 11 taint 0x5c13a                              300000.00000000                 0E-8     -300000.00000000
-    new REV 0xc3a0f                                   203930.75599958                 0E-8     -203930.75599958
-    feb 11 taint 0x44948                              135299.00000000                 0E-8     -135299.00000000
-    feb 11 taint 0x6e75b                               10000.00000000                 0E-8      -10000.00000000
-    feb 11 taint 0xbbd93                                5000.00000000                 0E-8       -5000.00000000
-
 Ian seems to be working with Greg since Feb 11; the KuCoin 2 wallet seems to be un-tainted:
+    'raw RHOC to REV adjustments with addresses labelled... not sure what they should be@@'
 
     >>> audit.show('{0:<44} {1:>20} {2:>20} {3:>15} {4:>15}', *db.query('''
     ... select coalesce(bk.label, adj.addr) addr, adj.bal_rhoc, adj.bal_rev, adj.delta, taint.bal taint_bal
