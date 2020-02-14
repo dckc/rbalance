@@ -329,14 +329,15 @@ How do genesis balances differ from snapshot balances?
     ...   left join (select 'feb 11 taint' label, t.* from taint t) t on t.addr = adj.addr
     ...   order by abs(delta) desc, addr
     ... '''))
-Ian seems to be working with Greg since Feb 11; the KuCoin 2 wallet seems to be un-tainted:
     'raw RHOC to REV adjustments with addresses labelled... not sure what they should be@@'
 
-    >>> audit.show('{0:<44} {1:>20} {2:>20} {3:>15} {4:>15}', *db.query('''
+Ian seems to be working with Greg since Feb 11; the KuCoin 2 wallet seems to be partly un-tainted:
+
+    >>> audit.show('{0:<30} {1:>20} {2:>20} {3:>20} {4:>20}', *db.query('''
     ... select coalesce(bk.label, adj.addr) addr, adj.bal_rhoc, adj.bal_rev, adj.delta, taint.bal taint_bal
     ... from taint join adj on adj.addr = taint.addr
     ... left join addrbook bk on bk.addr = taint.addr
     ... where bal_rev != taint_bal
     ... '''), decimals=8)
-    addr                                                     bal_rhoc              bal_rev           delta       taint_bal
-    KuCoin 2                                        28826642.88573629    28826642.88573629            0E-8 23816642.89000000
+    addr                                       bal_rhoc              bal_rev                delta            taint_bal
+    KuCoin 2                          28826642.88573629    23826642.88573620    -5000000.00000009    23826642.88570000
