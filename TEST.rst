@@ -19,6 +19,20 @@ We have a few functions to build an audit DB::
     [u'genesis', u'snapshot', u'taint']
 
 
+RHOC Distribution
+=================
+
+Let's label some addresses based on `RHOC Distribution`__.
+
+__ https://github.com/rchain/reference/blob/master/finance/rhoc.md
+
+    >>> db.sql('''create table addrbook (addr text, label text)''')
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0x1c73d4ff97b9c8299f55d3b757b70979ee718754', 'Reserve Wallet')''')
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0xd35a2d8c651f3eba4f0a044db961b5b0ccf68a2d', 'Current operation')''')
+
+
 RHOC Snapshot
 =============
 
@@ -55,16 +69,6 @@ What are the top 10?
      (u'0x583c3bceb7b517acaeca84bce7c7266d7290a7aa', 1483867335645073),
      (u'0xf15230cba5b211b7cb6a4ae7cfc5a84e9cb6865d', 1420881000000000),
      (u'0xbee7cce5b6e2eb556219eef8f3061aa9ff0630e9', 1260711500000000)]
-
-Let's label some of these based on `RHOC Distribution`__.
-
-__ https://github.com/rchain/reference/blob/master/finance/rhoc.md
-
-    >>> db.sql('''create table addrbook (addr text, label text)''')
-    >>> db.sql('''insert into addrbook (addr, label)
-    ...           values ('0x1c73d4ff97b9c8299f55d3b757b70979ee718754', 'Reserve Wallet')''')
-    >>> db.sql('''insert into addrbook (addr, label)
-    ...           values ('0xd35a2d8c651f3eba4f0a044db961b5b0ccf68a2d', 'Current operation')''')
 
 And from `Ian Feb 13`__:
 
