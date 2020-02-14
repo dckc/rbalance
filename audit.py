@@ -45,9 +45,13 @@ class DB(object):
             cur.execute(stmt, row)
         self.__db.commit()
 
-    def sql(self, sql):
+    def sql(self, sql,
+            params=None):
         cur = self.__db.cursor()
-        cur.execute(sql)
+        if params is not None:
+            cur.execute(sql, params)
+        else:
+            cur.execute(sql)
 
     def query(self, sql):
         cur = self.__db.cursor()
