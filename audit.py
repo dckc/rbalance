@@ -1,6 +1,5 @@
 from __future__ import print_function
 from decimal import Decimal as D
-import csv
 
 
 class DB(object):
@@ -37,11 +36,14 @@ class DB(object):
         ''')
         return [name for [name] in cur.fetchall()]
 
-    def load(self, table, lines):
+    def load(self, table, rows,
+             cols='addr, bal, contract'):
         cur = self.__db.cursor()
-        stmt = 'insert into %s (addr, bal, contract) values (?, ?, ?)' % table
-        for row in csv.reader(lines):
-            row[0] = row[0].lower()  # normalize case of addresses
+        qmarks = ', '.join(['?' for _ in cols.split(',')])
+        stmt = 'insert into %s (%s) values (%s)' % (table, cols, qmarks)
+        for row in rows:
+            row = ((row[0].lower(),)  # normalize case of addresses
+                   + tuple(row[1:]))
             cur.execute(stmt, row)
         self.__db.commit()
 
