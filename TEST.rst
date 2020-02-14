@@ -242,12 +242,6 @@ wallets compare to the number of RHOC wallets?
     >>> qty_rev, qty_rhoc >= qty_rev
     (7329, True)
 
-What are these extra genesis balances???
-
-    >>> audit.show('{0:<55} {1:>20}', *db.query('''
-    ...     select g.addr, g.bal from genesis g left join snapshot s on g.addr = s.addr where s.addr is null
-    ... '''))
-
 What are the top 10?
     >>> _, top_rev = db.query('select addr, bal from snapshot order by bal desc limit 10')
     >>> top_rhoc == top_rev
