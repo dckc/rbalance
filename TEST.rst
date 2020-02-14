@@ -216,7 +216,10 @@ How do snapshot balances compare to taint balances?
     RHOC Scam token 17                                5000.00000000               0E-8     -5000.00000000
     KuCoin 2                                      28826642.88573629  23826642.88570000  -5000000.00003629
 
-Minutes say "For a total recovery of 67,119,258.36 RHOC." Does this check out?
+Minutes say "For a total recovery of 67,119,258.36 RHOC." As
+reported in
+`total recovery? issue 9 <https://github.com/rchain/rbalance/issues/9>`_,
+I cannot confirm.
 
     >>> hd, [[total_recovery]] = db.query('''
     ... select sum(delta) from (
@@ -254,7 +257,9 @@ writes "When I compare the sum of all RHOC wallet balances in block
 0.00000288 REV. This tiny discrepancy is because balance adjustments
 (from the scam RHOC) were determined from transaction history on
 Etherdelta, who reports a different number of significant digits. RHOC
-in wallets.txt is reported with 8 decimals."
+in wallets.txt is reported with 8 decimals." As reported in
+`issue 7 <https://github.com/rchain/rbalance/issues/7>`_,
+I cannot confirm.
 
     >>> pprint(db.query('''
     ... select tot_rhoc, tot_rev, tot_rev - tot_rhoc delta
@@ -308,7 +313,9 @@ What are the RHOC and REV balances of scam addresses and other known addresses?
     0xc3a0f  new REV                                           203930.75599958                 0E-8     -203930.75599958
     0x689c5  KuCoin 2                                        28826642.88573629    23826642.88573620    -5000000.00000009
 
-How do genesis balances differ from snapshot balances?
+How do genesis balances differ from snapshot balances?  I'm not sure
+about these results, ss reported in
+`struggling to correlate some RHOC accounts to REV accounts issue 10 <https://github.com/rchain/rbalance/issues/10>`_.
 
     >>> db.sql('''
     ... create view adj as
