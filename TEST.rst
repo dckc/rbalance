@@ -311,9 +311,15 @@ How do genesis balances differ from snapshot balances?
 
     >>> db.sql('''
     ... create view adj as
-    ... select s.addr, s.bal bal_rhoc, g.bal bal_rev, g.bal - s.bal as delta
+    ... select distinct addr, bal_rhoc, bal_rev, delta from (
+    ... select s.addr, s.bal bal_rhoc, g.bal bal_rev, coalesce(g.bal, 0) - s.bal as delta
     ... from snapshot s
     ... left join genesis g on g.addr = s.addr
+    ... union all
+    ... select g.addr, s.bal bal_rhoc, g.bal bal_rev, g.bal - coalesce(s.bal, 0) as delta
+    ... from genesis g
+    ... left join snapshot s on s.addr = g.addr
+    ... ) where delta != 0
     ... ''');
 
     >>> audit.show('{0:<44} {1:>20} {2:>20} {3:>20}', decimals=8, *db.query('''
@@ -321,7 +327,7 @@ How do genesis balances differ from snapshot balances?
     ...        , adj.bal_rhoc, adj.bal_rev, adj.delta from adj
     ...   left join addrbook bk on bk.addr = adj.addr
     ...   left join (select 'feb 11 taint' label, t.* from taint t) t on t.addr = adj.addr
-    ...   where abs(delta) != 0 order by abs(delta) desc, addr
+    ...   order by abs(delta) desc, addr
     ... '''))
     addr                                                     bal_rhoc              bal_rev                delta
     Reserve Wallet 0x1c73d                         274664038.37716800                 0E-8  -274664038.37716800
