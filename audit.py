@@ -67,7 +67,8 @@ def show(fmt, hd, data,
         if ix == 0:
             print(fmt.format(*hd))
         txt = list(l or '' for l in row[:labels])
-        nums = [(D(n) / 10 ** decimals).quantize(q) for n in row[labels:]]
+        nums = ['' if n is None else (D(n) / 10 ** decimals).quantize(q)
+                for n in row[labels:]]
         print(fmt.format(*(txt + nums)))
 
 
