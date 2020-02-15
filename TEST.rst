@@ -175,7 +175,6 @@ cf. `Feb 11 board minutes
     >>> audit.show('{0:<44} {1:>20}', *db.query('select addr, bal from taint'), decimals=8)
     addr                                                          bal
     0x583c3bceb7b517acaeca84bce7c7266d7290a7aa                   0E-8
-    0x44d37b82cbbb410a42725d3a51c7f84f3bda12a7        216991.46410000
     0xaa9bdb711a1ff305f398777c65ac70be6bf0fa5f                   0E-8
     0xbdcbf01d5a0fbe303a4863b7331f4c3b87db7cc2       1059541.08260000
     0x62917a5bce92bc34bdc6b9254b3cc426d52752f3       1588740.00000000
@@ -199,8 +198,6 @@ How do snapshot balances compare to taint balances?
     ... '''), decimals=8)
     addr                                                   bal_rhoc          bal_taint              delta
     0x583c3bceb7b517acaeca84bce7c7266d7290a7aa    14838673.35645073               0E-8 -14838673.35645073
-    pithia 10 1,000                                6466991.46410000    216991.46410000  -6250000.00000000
-    pithia 9 6,466,991                             6466991.46410000    216991.46410000  -6250000.00000000
     pithia 7 8,936,500                             8927500.00000000               0E-8  -8927500.00000000
     pithia 8 1,000                                 8927500.00000000               0E-8  -8927500.00000000
     pithia 5 4,061,500                             5122041.08255400   1059541.08260000  -4062499.99995400
@@ -304,14 +301,14 @@ What are the RHOC and REV balances of scam addresses and other known addresses?
     0xbdcbf  pithia 6 1,000                                   5122041.08255400     1059541.08260000    -4062499.99995400
     0xaa9bd  pithia 7 8,936,500                               8927500.00000000                 0E-8    -8927500.00000000
     0xaa9bd  pithia 8 1,000                                   8927500.00000000                 0E-8    -8927500.00000000
-    0x44d37  pithia 9 6,466,991                               6466991.46410000      216991.46410000    -6250000.00000000
-    0x44d37  pithia 10 1,000                                  6466991.46410000      216991.46410000    -6250000.00000000
     0x28755  Token Sale Wallet                               31176931.98495265                 0E-8   -31176931.98495265
     0x821aa  Research Wallet                                  4000000.00000000                 0E-8    -4000000.00000000
     0xf1523  new REV                                         14208810.00000000                 0E-8   -14208810.00000000
     0x4c8c0  new REV                                           783513.78500000                 0E-8     -783513.78500000
     0xc3a0f  new REV                                           203930.75599958                 0E-8     -203930.75599958
     0x689c5  KuCoin 2                                        28826642.88573629    23826642.88573620    -5000000.00000009
+    0x44d37  pithia 9 6,466,991                               6466991.46410000     6466991.46410000                 0E-8
+    0x44d37  pithia 10 1,000                                  6466991.46410000     6466991.46410000                 0E-8
 
 How do genesis balances differ from snapshot balances?  I'm not sure
 about these results, ss reported in
