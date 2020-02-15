@@ -241,7 +241,7 @@ wallets compare to the number of RHOC wallets?
 
     >>> _cols, [[qty_rev]] = db.query('select count(*) qty from genesis where bal != 0')
     >>> qty_rev, qty_rhoc
-    (7340, 7336)
+    (7329, 7336)
 
 What are the top 10?
     >>> _, top_rev = db.query('select addr, bal from snapshot order by bal desc limit 10')
