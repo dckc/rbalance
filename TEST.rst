@@ -263,45 +263,46 @@ in the bonds file (validators)"
 
 What are the RHOC and REV balances of scam addresses and other known addresses?
     >>> audit.show('{0:<8} {1:<44} {2:>20} {3:>20} {4:>20}', *db.query('''
-    ... select substr(bk.addr, 1, 7) addr, bk.label, s.bal bal_rhoc, g.bal bal_rev, g.bal - s.bal delta
+    ... select substr(bk.addr, 1, 7) addr, bk.label, s.bal bal_rhoc, g.bal bal_rev
+    ...      , coalesce(g.bal, 0) - coalesce(s.bal, 0) delta
     ... from addrbook bk
     ... left join snapshot s on s.addr = bk.addr
     ... left join genesis g on g.addr = bk.addr
     ... '''), decimals=8, labels=2)
     addr     label                                                    bal_rhoc              bal_rev                delta
-    0x1c73d  Reserve Wallet                                 274664038.37716800                 0E-8  -274664038.37716800
-    0xd35a2  Current operation                               77932217.80308682                 0E-8   -77932217.80308682
-    0xf01bc  RHOC Scam token 16                                           0E-8                                          
-    0x381b9  RHOC Scam token 3                                            0E-8                                          
-    0x3198a  RHOC Scam token 14                               4315002.00000000                 0E-8    -4315002.00000000
-    0x3d3b4  RHOC Scam token 11                                           0E-8                                          
-    0x81e33  RHOC Scam token 15                                           0E-8                                          
-    0x5b7fe  RHOC Scam token 4                                            0E-8                                          
-    0xdcb05  RHOC Scam token 2                                3400500.00000000                 0E-8    -3400500.00000000
-    0x17bb1  RHOC Scam token 6                                            0E-8                                          
-    0x602bd  RHOC Scam token 7                                            0E-8                                          
-    0xdf04e  RHOC Scam token 5                                            0E-8                                          
-    0xff5cf  RHOC Scam token 10                                           0E-8                                          
-    0x15819  RHOC Scam token 13                                           0E-8                                          
-    0xbd009  RHOC Scam token 8                                            0E-8                                          
-    0xbbd93  RHOC Scam token 17                                  5000.00000000                 0E-8       -5000.00000000
+    0x1c73d  Reserve Wallet                                 274664038.37716800                       -274664038.37716800
+    0xd35a2  Current operation                               77932217.80308682                        -77932217.80308682
+    0xf01bc  RHOC Scam token 16                                           0E-8                                      0E-8
+    0x381b9  RHOC Scam token 3                                            0E-8                                      0E-8
+    0x3198a  RHOC Scam token 14                               4315002.00000000                         -4315002.00000000
+    0x3d3b4  RHOC Scam token 11                                           0E-8                                      0E-8
+    0x81e33  RHOC Scam token 15                                           0E-8                                      0E-8
+    0x5b7fe  RHOC Scam token 4                                            0E-8                                      0E-8
+    0xdcb05  RHOC Scam token 2                                3400500.00000000                         -3400500.00000000
+    0x17bb1  RHOC Scam token 6                                            0E-8                                      0E-8
+    0x602bd  RHOC Scam token 7                                            0E-8                                      0E-8
+    0xdf04e  RHOC Scam token 5                                            0E-8                                      0E-8
+    0xff5cf  RHOC Scam token 10                                           0E-8                                      0E-8
+    0x15819  RHOC Scam token 13                                           0E-8                                      0E-8
+    0xbd009  RHOC Scam token 8                                            0E-8                                      0E-8
+    0xbbd93  RHOC Scam token 17                                  5000.00000000                            -5000.00000000
     0x4acfa  RHOC Scam token 9                                    100.00000000         100.00000000                 0E-8
-    0x14c50  RHOC Scam token 12                                           0E-8                                          
-    0x28890  pithia 1 4,999,990                                           0E-8                                          
-    0x1e5ec  pithia 2 4,999,990                                           0E-8                                          
+    0x14c50  RHOC Scam token 12                                           0E-8                                      0E-8
+    0x28890  pithia 1 4,999,990                                           0E-8                                      0E-8
+    0x1e5ec  pithia 2 4,999,990                                           0E-8                                      0E-8
     0x62917  pithia 3 19,499,000                             21088740.00000000     1588740.00000000   -19500000.00000000
     0x62917  pithia 4 1,000                                  21088740.00000000     1588740.00000000   -19500000.00000000
-    0xaa9bd  pithia 7 8,936,500                               8927500.00000000                 0E-8    -8927500.00000000
-    0xaa9bd  pithia 8 1,000                                   8927500.00000000                 0E-8    -8927500.00000000
-    0x28755  Token Sale Wallet                               31176931.98495265                 0E-8   -31176931.98495265
-    0x821aa  Research Wallet                                  4000000.00000000                 0E-8    -4000000.00000000
-    0xf1523  new REV                                         14208810.00000000                 0E-8   -14208810.00000000
-    0x4c8c0  new REV                                           783513.78500000                 0E-8     -783513.78500000
-    0xc3a0f  new REV                                           203930.75599958                 0E-8     -203930.75599958
     0xbdcbf  pithia 5 4,061,500                               5122041.08255400     1059541.08255400    -4062500.00000000
     0xbdcbf  pithia 6 1,000                                   5122041.08255400     1059541.08255400    -4062500.00000000
+    0xaa9bd  pithia 7 8,936,500                               8927500.00000000                         -8927500.00000000
+    0xaa9bd  pithia 8 1,000                                   8927500.00000000                         -8927500.00000000
     0x44d37  pithia 9 6,466,991                               6466991.46410000     6466991.46410000                 0E-8
     0x44d37  pithia 10 1,000                                  6466991.46410000     6466991.46410000                 0E-8
+    0x28755  Token Sale Wallet                               31176931.98495265                        -31176931.98495265
+    0x821aa  Research Wallet                                  4000000.00000000                         -4000000.00000000
+    0xf1523  new REV                                         14208810.00000000                        -14208810.00000000
+    0x4c8c0  new REV                                           783513.78500000                          -783513.78500000
+    0xc3a0f  new REV                                           203930.75599958                          -203930.75599958
     0x689c5  KuCoin 2                                        28826642.88573629    23816642.88573620    -5010000.00000009
 
 How do genesis balances differ from snapshot balances?  I'm not sure
