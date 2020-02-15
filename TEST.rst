@@ -248,24 +248,18 @@ What are the top 10?
     >>> top_rhoc == top_rev
     True
 
-How does the snapshot supply compare to the genesis supply? @ian
-writes "When I compare the sum of all RHOC wallet balances in block
-9371743 to the genesis wallet candidate, there is a difference of only
-0.00000288 REV. This tiny discrepancy is because balance adjustments
-(from the scam RHOC) were determined from transaction history on
-Etherdelta, who reports a different number of significant digits. RHOC
-in wallets.txt is reported with 8 decimals." As reported in
-`issue 7 <https://github.com/rchain/rbalance/issues/7>`_,
-I cannot confirm.
+How does the snapshot supply compare to the genesis supply?  @ian
+writes "12,317.034.24 RHOC is missing from wallets.txt because it is
+in the bonds file (validators)"
 
-    >>> pprint(db.query('''
-    ... select tot_rhoc, tot_rev, tot_rev - tot_rhoc delta
+    >>> audit.show('{0:<20} {1:>20} {2:>20} {3:>20}', *db.query('''
+    ... select 'supply', tot_rhoc, tot_rev, tot_rev - tot_rhoc delta
     ... from (
     ...   select (select sum(bal) from snapshot) as tot_rhoc
     ...        , (select sum(bal) from genesis) as tot_rev
-    ... )'''))
-    (['tot_rhoc', 'tot_rev', 'delta'],
-     [(100000000000000000, 100000000000000288, 288)])
+    ... )'''), decimals=8)
+    'supply'                         tot_rhoc              tot_rev                delta
+    supply                1000000000.00000000   987682965.75999995   -12317034.24000005
 
 What are the RHOC and REV balances of scam addresses and other known addresses?
     >>> audit.show('{0:<8} {1:<44} {2:>20} {3:>20} {4:>20}', *db.query('''
