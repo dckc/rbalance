@@ -337,7 +337,11 @@ The total of adjustments is the same ~12M validator bonds amount:
     ...   left join (select 'feb 11 taint' label, t.* from taint t) t on t.addr = adj.addr
     ...   order by abs(delta) desc, addr
     ... '''))
-    'raw RHOC to REV adjustments with addresses labelled... not sure what they should be@@'
+    addr                                                     bal_rhoc              bal_rev                delta
+    Reserve Wallet 0x1c73d                         274664038.37716800                       -274664038.37716800
+    0x6defba912a6664838eec10417c75d5270932d6c7                          262347004.13716800   262347004.13716800
+    Token Sale Wallet 0x28755                       31176931.98495265                        -31176931.98495265
+    0xb4c242f379eed1f2a6cdbc1ca7466738f06793a5                           31176931.98495260    31176931.98495260
 
 Since the Feb 11 board minutes, 0xbdcbf pithia was adjusted slightly
 (to match the "Scam addresses" blog item). And the KuCoin 2 wallet
