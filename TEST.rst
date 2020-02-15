@@ -322,6 +322,14 @@ about these results, ss reported in
     ... ) where delta != 0
     ... ''');
 
+The total of adjustments is the same ~12M validator bonds amount:
+
+    >>> audit.show('{0:<20} {1:>20}',
+    ...            *db.query("select 'total adj', sum(delta) from adj"),
+    ...            decimals=8)
+    'total adj'                    sum(delta)
+    total adj              -12317034.24000005
+
     >>> audit.show('{0:<44} {1:>20} {2:>20} {3:>20}', decimals=8, *db.query('''
     ...   select coalesce(coalesce(bk.label, t.label) || ' ' || substr(adj.addr, 1, 7), adj.addr) addr
     ...        , adj.bal_rhoc, adj.bal_rev, adj.delta from adj
