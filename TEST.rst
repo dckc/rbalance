@@ -213,7 +213,7 @@ How do snapshot balances compare to taint balances?
     RHOC Scam token 17                                5000.00000000               0E-8     -5000.00000000
     KuCoin 2                                      28826642.88573629  23826642.88570000  -5000000.00003629
 
-Minutes say "For a total recovery of 67,119,258.36 RHOC." As
+Minutes say "For a total recovery of 60,869,258 RHOC." As
 reported in
 `total recovery? issue 9 <https://github.com/rchain/rbalance/issues/9>`_,
 I cannot confirm.
@@ -225,7 +225,7 @@ I cannot confirm.
     ... )
     ... ''')
     >>> D(total_recovery) / rhoc8
-    Decimal('67119258.36')
+    Decimal('60869258')
 
 
 Genesis REV Wallets Proposal
