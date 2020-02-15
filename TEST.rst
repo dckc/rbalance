@@ -305,9 +305,7 @@ What are the RHOC and REV balances of scam addresses and other known addresses?
     0xc3a0f  new REV                                           203930.75599958                          -203930.75599958
     0x689c5  KuCoin 2                                        28826642.88573629    23816642.88573620    -5010000.00000009
 
-How do genesis balances differ from snapshot balances?  I'm not sure
-about these results, ss reported in
-`struggling to correlate some RHOC accounts to REV accounts issue 10 <https://github.com/rchain/rbalance/issues/10>`_.
+How do genesis balances differ from snapshot balances?
 
     >>> db.sql('''
     ... create view adj as
@@ -330,6 +328,9 @@ The total of adjustments is the same ~12M validator bonds amount:
     'total adj'                    sum(delta)
     total adj              -12317034.24000005
 
+I'm not sure about these results, as reported in
+`struggling to correlate some RHOC accounts to REV accounts issue 10 <https://github.com/rchain/rbalance/issues/10>`_.
+
     >>> audit.show('{0:<44} {1:>20} {2:>20} {3:>20}', decimals=8, *db.query('''
     ...   select coalesce(coalesce(bk.label, t.label) || ' ' || substr(adj.addr, 1, 7), adj.addr) addr
     ...        , adj.bal_rhoc, adj.bal_rev, adj.delta from adj
@@ -340,21 +341,35 @@ The total of adjustments is the same ~12M validator bonds amount:
     addr                                                     bal_rhoc              bal_rev                delta
     Reserve Wallet 0x1c73d                         274664038.37716800                       -274664038.37716800
     0x6defba912a6664838eec10417c75d5270932d6c7                          262347004.13716800   262347004.13716800
+    0xc9b2b0bbc1558d69fd285d31ee7897d9b808103a                          135767221.20220800   135767221.20220800
+    Current operation 0xd35a2                       77932217.80308682                        -77932217.80308682
     Token Sale Wallet 0x28755                       31176931.98495265                        -31176931.98495265
     0xb4c242f379eed1f2a6cdbc1ca7466738f06793a5                           31176931.98495260    31176931.98495260
     pithia 3 19,499,000 0x62917                     21088740.00000000     1588740.00000000   -19500000.00000000
     pithia 4 1,000 0x62917                          21088740.00000000     1588740.00000000   -19500000.00000000
     feb 11 taint 0x583c3                            14838673.35645073                        -14838673.35645073
+    new REV 0xf1523                                 14208810.00000000                        -14208810.00000000
     pithia 7 8,936,500 0xaa9bd                       8927500.00000000                         -8927500.00000000
     pithia 8 1,000 0xaa9bd                           8927500.00000000                         -8927500.00000000
+    0x42c9625ea0b18a6d427048094a14476cf339cd31                            7104405.00000000     7104405.00000000
+    0xeb08e33fdbb693ac2fddd104de0b8a2ac56d6119                            7104405.00000000     7104405.00000000
     KuCoin 2 0x689c5                                28826642.88573629    23816642.88573620    -5010000.00000009
     RHOC Scam token 14 0x3198a                       4315002.00000000                         -4315002.00000000
     pithia 5 4,061,500 0xbdcbf                       5122041.08255400     1059541.08255400    -4062500.00000000
     pithia 6 1,000 0xbdcbf                           5122041.08255400     1059541.08255400    -4062500.00000000
+    Research Wallet 0x821aa                          4000000.00000000                         -4000000.00000000
+    0x742ab73a29239d0bbdb8548d936f1325a58dd8fb                            3872000.00000000     3872000.00000000
     RHOC Scam token 2 0xdcb05                        3400500.00000000                         -3400500.00000000
+    0x198eddaac45d28ec336df3443dfc5f23d16a8a52                            3000000.00000000     3000000.00000000
+    0x5333e2064df92d85321ffdab03620f44481442b8                             987444.54099958      987444.54099958
+    new REV 0x4c8c0                                   783513.78500000                          -783513.78500000
     feb 11 taint 0xfd9b2                              364784.00000000                          -364784.00000000
     feb 11 taint 0x5c13a                              300000.00000000                          -300000.00000000
+    new REV 0xc3a0f                                   203930.75599958                          -203930.75599958
     feb 11 taint 0x44948                              135299.00000000                          -135299.00000000
+    0xf6e07f4ae0961a143d164585fc5f134ec438a1ca                             128000.00000000      128000.00000000
+    0x95a110f5fcc7cec23e072840f15450817e5e6c90                              48000.00000000       48000.00000000
+    0x168296bb09e24a88805cb9c33356536b980d3fc5         13745.04267036                           -13745.04267036
     feb 11 taint 0x6e75b                               10000.00000000                           -10000.00000000
     RHOC Scam token 17 0xbbd93                          5000.00000000                            -5000.00000000
 
