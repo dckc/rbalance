@@ -291,8 +291,6 @@ What are the RHOC and REV balances of scam addresses and other known addresses?
     0x1e5ec  pithia 2 4,999,990                                           0E-8                                          
     0x62917  pithia 3 19,499,000                             21088740.00000000     1588740.00000000   -19500000.00000000
     0x62917  pithia 4 1,000                                  21088740.00000000     1588740.00000000   -19500000.00000000
-    0xbdcbf  pithia 5 4,061,500                               5122041.08255400     1059541.08260000    -4062499.99995400
-    0xbdcbf  pithia 6 1,000                                   5122041.08255400     1059541.08260000    -4062499.99995400
     0xaa9bd  pithia 7 8,936,500                               8927500.00000000                 0E-8    -8927500.00000000
     0xaa9bd  pithia 8 1,000                                   8927500.00000000                 0E-8    -8927500.00000000
     0x28755  Token Sale Wallet                               31176931.98495265                 0E-8   -31176931.98495265
@@ -301,6 +299,8 @@ What are the RHOC and REV balances of scam addresses and other known addresses?
     0x4c8c0  new REV                                           783513.78500000                 0E-8     -783513.78500000
     0xc3a0f  new REV                                           203930.75599958                 0E-8     -203930.75599958
     0x689c5  KuCoin 2                                        28826642.88573629    23826642.88573620    -5000000.00000009
+    0xbdcbf  pithia 5 4,061,500                               5122041.08255400     1059541.08255400    -4062500.00000000
+    0xbdcbf  pithia 6 1,000                                   5122041.08255400     1059541.08255400    -4062500.00000000
     0x44d37  pithia 9 6,466,991                               6466991.46410000     6466991.46410000                 0E-8
     0x44d37  pithia 10 1,000                                  6466991.46410000     6466991.46410000                 0E-8
 
@@ -330,7 +330,9 @@ about these results, ss reported in
     ... '''))
     'raw RHOC to REV adjustments with addresses labelled... not sure what they should be@@'
 
-Ian seems to be working with Greg since Feb 11; the KuCoin 2 wallet seems to be partly un-tainted:
+Since the Feb 11 board minutes, 0xbdcbf pithia was adjusted slightly
+(to match the "Scam addresses" blog item). And the KuCoin 2 wallet
+seems to be partly un-tainted:
 
     >>> audit.show('{0:<30} {1:>20} {2:>20} {3:>20} {4:>20}', *db.query('''
     ... select coalesce(bk.label, adj.addr) addr, adj.bal_rhoc, adj.bal_rev, adj.delta, taint.bal taint_bal
@@ -340,3 +342,5 @@ Ian seems to be working with Greg since Feb 11; the KuCoin 2 wallet seems to be 
     ... '''), decimals=8)
     addr                                       bal_rhoc              bal_rev                delta            taint_bal
     KuCoin 2                          28826642.88573629    23826642.88573620    -5000000.00000009    23826642.88570000
+    pithia 5 4,061,500                 5122041.08255400     1059541.08255400    -4062500.00000000     1059541.08260000
+    pithia 6 1,000                     5122041.08255400     1059541.08255400    -4062500.00000000     1059541.08260000
