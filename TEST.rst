@@ -298,11 +298,11 @@ What are the RHOC and REV balances of scam addresses and other known addresses?
     0xf1523  new REV                                         14208810.00000000                 0E-8   -14208810.00000000
     0x4c8c0  new REV                                           783513.78500000                 0E-8     -783513.78500000
     0xc3a0f  new REV                                           203930.75599958                 0E-8     -203930.75599958
-    0x689c5  KuCoin 2                                        28826642.88573629    23826642.88573620    -5000000.00000009
     0xbdcbf  pithia 5 4,061,500                               5122041.08255400     1059541.08255400    -4062500.00000000
     0xbdcbf  pithia 6 1,000                                   5122041.08255400     1059541.08255400    -4062500.00000000
     0x44d37  pithia 9 6,466,991                               6466991.46410000     6466991.46410000                 0E-8
     0x44d37  pithia 10 1,000                                  6466991.46410000     6466991.46410000                 0E-8
+    0x689c5  KuCoin 2                                        28826642.88573629    23816642.88573620    -5010000.00000009
 
 How do genesis balances differ from snapshot balances?  I'm not sure
 about these results, ss reported in
@@ -341,6 +341,6 @@ seems to be partly un-tainted:
     ... where bal_rev != taint_bal
     ... '''), decimals=8)
     addr                                       bal_rhoc              bal_rev                delta            taint_bal
-    KuCoin 2                          28826642.88573629    23826642.88573620    -5000000.00000009    23826642.88570000
     pithia 5 4,061,500                 5122041.08255400     1059541.08255400    -4062500.00000000     1059541.08260000
     pithia 6 1,000                     5122041.08255400     1059541.08255400    -4062500.00000000     1059541.08260000
+    KuCoin 2                          28826642.88573629    23816642.88573620    -5010000.00000009    23826642.88570000
