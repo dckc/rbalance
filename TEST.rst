@@ -342,6 +342,12 @@ The total of adjustments is the same ~12M validator bonds amount:
     0x6defba912a6664838eec10417c75d5270932d6c7                          262347004.13716800   262347004.13716800
     Token Sale Wallet 0x28755                       31176931.98495265                        -31176931.98495265
     0xb4c242f379eed1f2a6cdbc1ca7466738f06793a5                           31176931.98495260    31176931.98495260
+    pithia 3 19,499,000 0x62917                     21088740.00000000     1588740.00000000   -19500000.00000000
+    pithia 4 1,000 0x62917                          21088740.00000000     1588740.00000000   -19500000.00000000
+    pithia 7 8,936,500 0xaa9bd                       8927500.00000000                         -8927500.00000000
+    pithia 8 1,000 0xaa9bd                           8927500.00000000                         -8927500.00000000
+    pithia 5 4,061,500 0xbdcbf                       5122041.08255400     1059541.08255400    -4062500.00000000
+    pithia 6 1,000 0xbdcbf                           5122041.08255400     1059541.08255400    -4062500.00000000
 
 Since the Feb 11 board minutes, 0xbdcbf pithia was adjusted slightly
 (to match the "Scam addresses" blog item). And the KuCoin 2 wallet
