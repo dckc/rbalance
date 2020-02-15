@@ -344,10 +344,18 @@ The total of adjustments is the same ~12M validator bonds amount:
     0xb4c242f379eed1f2a6cdbc1ca7466738f06793a5                           31176931.98495260    31176931.98495260
     pithia 3 19,499,000 0x62917                     21088740.00000000     1588740.00000000   -19500000.00000000
     pithia 4 1,000 0x62917                          21088740.00000000     1588740.00000000   -19500000.00000000
+    feb 11 taint 0x583c3                            14838673.35645073                        -14838673.35645073
     pithia 7 8,936,500 0xaa9bd                       8927500.00000000                         -8927500.00000000
     pithia 8 1,000 0xaa9bd                           8927500.00000000                         -8927500.00000000
+    RHOC Scam token 14 0x3198a                       4315002.00000000                         -4315002.00000000
     pithia 5 4,061,500 0xbdcbf                       5122041.08255400     1059541.08255400    -4062500.00000000
     pithia 6 1,000 0xbdcbf                           5122041.08255400     1059541.08255400    -4062500.00000000
+    RHOC Scam token 2 0xdcb05                        3400500.00000000                         -3400500.00000000
+    feb 11 taint 0xfd9b2                              364784.00000000                          -364784.00000000
+    feb 11 taint 0x5c13a                              300000.00000000                          -300000.00000000
+    feb 11 taint 0x44948                              135299.00000000                          -135299.00000000
+    feb 11 taint 0x6e75b                               10000.00000000                           -10000.00000000
+    RHOC Scam token 17 0xbbd93                          5000.00000000                            -5000.00000000
 
 Since the Feb 11 board minutes, 0xbdcbf pithia was adjusted slightly
 (to match the "Scam addresses" blog item). And the KuCoin 2 wallet
