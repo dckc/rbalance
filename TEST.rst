@@ -18,7 +18,7 @@ We have a few functions to build an audit DB::
     >>> import audit
     >>> db = audit.DB(sqlite3.connect('rev_check.db'))
     >>> db.init_tables()
-    [u'genesis', u'snapshot', u'taint']
+    [u'addrbook', u'genesis', u'snapshot', u'taint']
 
 
 RHOC Distribution
@@ -27,7 +27,6 @@ RHOC Distribution
 Let's label some addresses based on `RHOC Distribution
 <https://github.com/rchain/reference/blob/master/finance/rhoc.md>`_.
 
-    >>> db.sql('''create table addrbook (addr text, label text)''')
     >>> db.sql('''insert into addrbook (addr, label)
     ...           values ('0x1c73d4ff97b9c8299f55d3b757b70979ee718754', 'Reserve Wallet')''')
     >>> db.sql('''insert into addrbook (addr, label)

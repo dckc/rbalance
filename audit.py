@@ -20,6 +20,11 @@ class DB(object):
           addr text, bal int, contract int,
           primary key(addr)
         )''',
+        '''
+        create table addrbook (
+          addr text,
+          label text
+        )''',
     ]
 
     def __init__(self, conn):
