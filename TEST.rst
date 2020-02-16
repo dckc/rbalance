@@ -1,8 +1,22 @@
+RChain Geneisis Audit
+---------------------
+
+by `dckc <https://www.madmode.com/>`_.
+
+This is an audit / review of
+`wallets.txt <https://github.com/rchain/rchain/blob/dev/wallets.txt>`_,
+the proposed genesis REV balances for RChain.
+
+See also `live repl <https://repl.it/@dckc/rbalance>`_.
+
+
 Preface: DB Setup
 =================
 
-The python standard library includes `sqlite
-<https://www.sqlite.org/index.html>`_ etc.::
+This is a
+`python doctest <https://docs.python.org/2.7/library/doctest.html>`_
+file using
+`sqlite <https://www.sqlite.org/index.html>`_ etc.:
 
     >>> from __future__ import print_function
     >>> from decimal import Decimal as D
@@ -13,7 +27,7 @@ The python standard library includes `sqlite
     >>> import sqlite3
     >>> import urllib2
 
-We have a few functions to build an audit DB::
+We have a few functions to build an audit DB:
 
     >>> import audit
     >>> db = audit.DB(sqlite3.connect('rev_check.db'))
@@ -36,9 +50,10 @@ Let's label some addresses based on `RHOC Distribution
 Scam Addresses
 ==============
 
+The coop listed several addresses in a May 3, 2019
 `Important: Scam wallet addresses
 <https://blog.rchain.coop/blog/2019/05/03/mitigating-the-barcelona-attack/>`_
-May 3, 2019
+announcement:
 
     >>> scam = [[t.strip() for t in line.split('  ', 1)]
     ...         for line in '''
@@ -116,6 +131,7 @@ The total of RHOC balances should be 1 billion (10^9) RHOC:
     True
 
 What are the top 10?
+
     >>> _, top_rhoc = db.query('select addr, bal from snapshot order by bal desc limit 10'); pprint(top_rhoc)
     [(u'0x1c73d4ff97b9c8299f55d3b757b70979ee718754', 27466403837716800),
      (u'0x0000000000000000000000000000000000000000', 12933642600000000),
@@ -128,7 +144,8 @@ What are the top 10?
      (u'0xf15230cba5b211b7cb6a4ae7cfc5a84e9cb6865d', 1420881000000000),
      (u'0xbee7cce5b6e2eb556219eef8f3061aa9ff0630e9', 1260711500000000)]
 
-And from `Ian Feb 13 <https://discordapp.com/channels/375365542359465989/454113117257859073/677385362443730944>`_:
+Those addresses are a bit obscure; let's add some more labels
+from `Ian Feb 13 <https://discordapp.com/channels/375365542359465989/454113117257859073/677385362443730944>`_:
 
     >>> db.sql('''insert into addrbook (addr, label)
     ...           values ('0x287550958be9d74d7f7152c911ba0b71801153a8', 'Token Sale Wallet')''')
@@ -148,6 +165,8 @@ And from etherscan
 
     >>> db.sql('''insert into addrbook (addr, label)
     ...           values ('0x689c56aef474df92d44a1b70850f808488f9769c', 'KuCoin 2')''')
+
+Now the top 10 are less obscure:
 
     >>> audit.show('{0:<20} {1:<44} {2:>20}', *db.query('''
     ...     select a.label, s.addr, s.bal from snapshot s left join addrbook a on a.addr = s.addr
@@ -170,7 +189,7 @@ Feb 11 BOD Resolution: Tainted RHOC Amendment
 =============================================
 
 cf. `Feb 11 board minutes
-<https://raw.githubusercontent.com/rchain/board/master/2020/02-11/README.md>`_.
+<https://github.com/rchain/board/tree/master/2020/02-11>`_.
 
     >>> feb11 = 'https://raw.githubusercontent.com/rchain/board/master/2020/02-11/README.md'
     >>> ea = audit.mdtable(urllib2.urlopen(feb11))
@@ -238,7 +257,7 @@ I cannot confirm.
 Genesis REV Wallets Proposal
 ============================
 
-`wallets.txt <https://raw.githubusercontent.com/rchain/rchain/dev/wallets.txt>`_:
+cf. `wallets.txt <https://github.com/rchain/rchain/blob/dev/wallets.txt>`_:
 
     >>> genesis_addr = 'https://raw.githubusercontent.com/rchain/rchain/dev/wallets.txt'
     >>> db.load('genesis', csv.reader(urllib2.urlopen(genesis_addr)))
@@ -250,14 +269,17 @@ wallets compare to the number of RHOC wallets?
     >>> qty_rev, qty_rhoc
     (7329, 7336)
 
-What are the top 10?
+The top 10 are the same, right?
+
     >>> _, top_rev = db.query('select addr, bal from snapshot order by bal desc limit 10')
     >>> top_rhoc == top_rev
     True
 
-How does the snapshot supply compare to the genesis supply?  @ian
-writes "12,317.034.24 RHOC is missing from wallets.txt because it is
-in the bonds file (validators)"
+How does the snapshot supply compare to the genesis supply? A
+`Feb 14 msg from @ian <https://discordapp.com/channels/375365542359465989/454113117257859073/677958046437212210>`_
+says, "12,317.034.24 RHOC is missing from wallets.txt because it is in
+the bonds file (validators)". He seems to be off by 0.00000005 REV;
+close enough:
 
     >>> audit.show('{0:<20} {1:>20} {2:>20} {3:>20}', *db.query('''
     ... select 'supply', tot_rhoc, tot_rev, tot_rev - tot_rhoc delta
@@ -269,6 +291,7 @@ in the bonds file (validators)"
     supply                1000000000.00000000   987682965.75999995   -12317034.24000005
 
 What are the RHOC and REV balances of scam addresses and other known addresses?
+
     >>> audit.show('{0:<8} {1:<44} {2:>20} {3:>20} {4:>20}', *db.query('''
     ... select substr(bk.addr, 1, 7) addr, bk.label, s.bal bal_rhoc, g.bal bal_rev
     ...      , coalesce(g.bal, 0) - coalesce(s.bal, 0) delta
@@ -334,6 +357,10 @@ The total of adjustments is the same ~12M validator bonds amount:
     ...            decimals=8)
     'total adj'                    sum(delta)
     total adj              -12317034.24000005
+
+
+Genesis REV Summary
+~~~~~~~~~~~~~~~~~~~
 
 I'm not sure about these results, as reported in
 `struggling to correlate some RHOC accounts to REV accounts issue 10 <https://github.com/rchain/rbalance/issues/10>`_.
