@@ -234,7 +234,7 @@ cf. `Feb 11 board minutes
     0x44948d4bcf984ee51d9e1127f3a0e4bc46bd6910                   0E-8
     0x3198af8d57cba0ba93a7f861432f148b37c3af98                   0E-8
     0xbbd9312f8fb2ae80e99cf661b47d8f3f1f151b5c                   0E-8
-    0x689c56aef474df92d44a1b70850f808488f9769c      23826642.88570000
+    0x689c56aef474df92d44a1b70850f808488f9769c      23816642.88570000
 
 
 How do snapshot balances compare to taint balances?
@@ -260,10 +260,9 @@ How do snapshot balances compare to taint balances?
     0x44948d4bcf984ee51d9e1127f3a0e4bc46bd6910      135299.00000000               0E-8   -135299.00000000
     RHOC Scam token 14                             4315002.00000000               0E-8  -4315002.00000000
     RHOC Scam token 17                                5000.00000000               0E-8     -5000.00000000
-    KuCoin 2                                      28826642.88573629  23826642.88570000  -5000000.00003629
+    KuCoin 2                                      28826642.88573629  23816642.88570000  -5010000.00003629
 
-Minutes say "For a total recovery of 60,869,258 RHOC."  This seems to
-be off by 10K due to KuCoin 2:
+As noted in the minutes, the total recovery is 60,869,258 RHOC:
 
     >>> hd, [[total_recovery]] = db.query('''
     ... select sum(delta) from (
@@ -272,7 +271,7 @@ be off by 10K due to KuCoin 2:
     ... )
     ... ''')
     >>> D(total_recovery) / rhoc8
-    Decimal('60859258.35644102')
+    Decimal('60869258.35644102')
 
 
 Genesis REV Wallets Proposal
@@ -432,9 +431,8 @@ In detail:
     feb 11 taint 0x6e75b                               10000.00000000                           -10000.00000000
     RHOC Scam token 17 0xbbd93                          5000.00000000                            -5000.00000000
 
-Since the Feb 11 board minutes, 0xbdcbf pithia was adjusted slightly
-(to match the "Scam addresses" blog item). And the KuCoin 2 wallet
-seems to be partly un-tainted:
+The genesis REV balances differ from the Feb 11 board minutes by some
+dust to match blockchain details:
 
     >>> audit.show('{0:<30} {1:>20} {2:>20} {3:>20} {4:>20}', *db.query('''
     ... select coalesce(bk.label, adj.addr) addr, adj.bal_rhoc, adj.bal_rev, adj.delta, taint.bal taint_bal
@@ -445,7 +443,7 @@ seems to be partly un-tainted:
     addr                                       bal_rhoc              bal_rev                delta            taint_bal
     pithia 5 4,061,500                 5122041.08255400     1059541.08255400    -4062500.00000000     1059541.08260000
     pithia 6 1,000                     5122041.08255400     1059541.08255400    -4062500.00000000     1059541.08260000
-    KuCoin 2                          28826642.88573629    23816642.88573620    -5010000.00000009    23826642.88570000
+    KuCoin 2                          28826642.88573629    23816642.88573620    -5010000.00000009    23816642.88570000
 
 
 Summary: RHOC to REV Non-taint adjustments
