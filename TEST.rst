@@ -165,6 +165,8 @@ And from etherscan
 
     >>> db.sql('''insert into addrbook (addr, label)
     ...           values ('0x689c56aef474df92d44a1b70850f808488f9769c', 'KuCoin 2')''')
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0x0000000000000000000000000000000000000000', 'burn')''')
 
 Now the top 10 are less obscure:
 
@@ -173,7 +175,7 @@ Now the top 10 are less obscure:
     ...     order by bal desc limit 11'''), labels=2)
     label                addr                                                          bal
     Reserve Wallet       0x1c73d4ff97b9c8299f55d3b757b70979ee718754      27466403837716800
-                         0x0000000000000000000000000000000000000000      12933642600000000
+    burn                 0x0000000000000000000000000000000000000000      12933642600000000
     Current operation    0xd35a2d8c651f3eba4f0a044db961b5b0ccf68a2d       7793221780308682
     Token Sale Wallet    0x287550958be9d74d7f7152c911ba0b71801153a8       3117693198495265
     KuCoin 2             0x689c56aef474df92d44a1b70850f808488f9769c       2882664288573629
@@ -334,6 +336,7 @@ What are the RHOC and REV balances of scam addresses and other known addresses?
     0x4c8c0  new REV                                           783513.78500000                          -783513.78500000
     0xc3a0f  new REV                                           203930.75599958                          -203930.75599958
     0x689c5  KuCoin 2                                        28826642.88573629    23816642.88573620    -5010000.00000009
+    0x00000  burn                                           129336426.00000000   129336426.00000000                 0E-8
 
 How do genesis balances differ from snapshot balances?
 
