@@ -6,8 +6,10 @@ The python standard library includes `sqlite
 
     >>> from __future__ import print_function
     >>> from decimal import Decimal as D
+    >>> from io import BytesIO
     >>> from pprint import pprint, pformat
     >>> import csv
+    >>> import hashlib
     >>> import sqlite3
     >>> import urllib2
 
@@ -87,10 +89,16 @@ May 3, 2019
 RHOC Snapshot
 =============
 
-Let's load the `snapshot` table with RHOC balances as of ethereum block 9371743:
+Let's load the `snapshot` table with RHOC balances as of ethereum
+block 9371743, generated using
+`rhoc-balance-reporter <https://github.com/rchain/rhoc-balance-reporter>`_,
+version 7a54a41 Aug 15 2019:
 
-    >>> with open('src/main/resources/wallets_9371743_withzeros.txt') as w:
-    ...     db.load('snapshot', csv.reader(w))
+    >>> snapaddr = 'https://github.com/rchain-community/RChain-docs/files/4142663/wallets_9371743.txt'
+    >>> snaptxt = urllib2.urlopen(snapaddr).read()
+    >>> hashlib.sha1(snaptxt).hexdigest()
+    '2e089d38d48b18f48fb969f34ae247ff7f4e0ca9'
+    >>> db.load('snapshot', csv.reader(BytesIO(snaptxt)))
 
 How many non-zero RHOC account balances do we have?
 
@@ -272,24 +280,24 @@ What are the RHOC and REV balances of scam addresses and other known addresses?
     addr     label                                                    bal_rhoc              bal_rev                delta
     0x1c73d  Reserve Wallet                                 274664038.37716800                       -274664038.37716800
     0xd35a2  Current operation                               77932217.80308682                        -77932217.80308682
-    0xf01bc  RHOC Scam token 16                                           0E-8                                      0E-8
-    0x381b9  RHOC Scam token 3                                            0E-8                                      0E-8
+    0xf01bc  RHOC Scam token 16                                                                                     0E-8
+    0x381b9  RHOC Scam token 3                                                                                      0E-8
     0x3198a  RHOC Scam token 14                               4315002.00000000                         -4315002.00000000
-    0x3d3b4  RHOC Scam token 11                                           0E-8                                      0E-8
-    0x81e33  RHOC Scam token 15                                           0E-8                                      0E-8
-    0x5b7fe  RHOC Scam token 4                                            0E-8                                      0E-8
+    0x3d3b4  RHOC Scam token 11                                                                                     0E-8
+    0x81e33  RHOC Scam token 15                                                                                     0E-8
+    0x5b7fe  RHOC Scam token 4                                                                                      0E-8
     0xdcb05  RHOC Scam token 2                                3400500.00000000                         -3400500.00000000
-    0x17bb1  RHOC Scam token 6                                            0E-8                                      0E-8
-    0x602bd  RHOC Scam token 7                                            0E-8                                      0E-8
-    0xdf04e  RHOC Scam token 5                                            0E-8                                      0E-8
-    0xff5cf  RHOC Scam token 10                                           0E-8                                      0E-8
-    0x15819  RHOC Scam token 13                                           0E-8                                      0E-8
-    0xbd009  RHOC Scam token 8                                            0E-8                                      0E-8
+    0x17bb1  RHOC Scam token 6                                                                                      0E-8
+    0x602bd  RHOC Scam token 7                                                                                      0E-8
+    0xdf04e  RHOC Scam token 5                                                                                      0E-8
+    0xff5cf  RHOC Scam token 10                                                                                     0E-8
+    0x15819  RHOC Scam token 13                                                                                     0E-8
+    0xbd009  RHOC Scam token 8                                                                                      0E-8
     0xbbd93  RHOC Scam token 17                                  5000.00000000                            -5000.00000000
     0x4acfa  RHOC Scam token 9                                    100.00000000         100.00000000                 0E-8
-    0x14c50  RHOC Scam token 12                                           0E-8                                      0E-8
-    0x28890  pithia 1 4,999,990                                           0E-8                                      0E-8
-    0x1e5ec  pithia 2 4,999,990                                           0E-8                                      0E-8
+    0x14c50  RHOC Scam token 12                                                                                     0E-8
+    0x28890  pithia 1 4,999,990                                                                                     0E-8
+    0x1e5ec  pithia 2 4,999,990                                                                                     0E-8
     0x62917  pithia 3 19,499,000                             21088740.00000000     1588740.00000000   -19500000.00000000
     0x62917  pithia 4 1,000                                  21088740.00000000     1588740.00000000   -19500000.00000000
     0xbdcbf  pithia 5 4,061,500                               5122041.08255400     1059541.08255400    -4062500.00000000
