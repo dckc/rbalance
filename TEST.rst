@@ -1,4 +1,4 @@
-RChain Geneisis Audit
+RChain Genesis Audit
 ---------------------
 
 by `dckc <https://www.madmode.com/>`_.
@@ -145,21 +145,40 @@ What are the top 10?
      (u'0xbee7cce5b6e2eb556219eef8f3061aa9ff0630e9', 1260711500000000)]
 
 Those addresses are a bit obscure; let's add some more labels
-from `Ian Feb 13 <https://discordapp.com/channels/375365542359465989/454113117257859073/677385362443730944>`_:
+from `Ian Feb 13 <https://discordapp.com/channels/375365542359465989/454113117257859073/677385362443730944>`_
+plus off-line discussion 15 Feb:
 
     >>> db.sql('''insert into addrbook (addr, label)
     ...           values ('0x287550958be9d74d7f7152c911ba0b71801153a8', 'Token Sale Wallet')''')
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0xb4c242f379eed1f2a6cdbc1ca7466738f06793a5', 'Token Sale REV')''')
 
     >>> db.sql('''insert into addrbook (addr, label)
-    ...           values ('0x821aa521ecba3f4fdef89cbe1f468636e858d90d', 'Research Wallet')''')
+    ...           values ('0x821aa521ecba3f4fdef89cbe1f468636e858d90d', 'Research Wallet RHOC')''')
 
     >>> db.sql('''insert into addrbook (addr, label)
-    ...           values ('0xf15230cba5b211b7cb6a4ae7cfc5a84e9cb6865d', 'new REV')''')
+    ...           values ('0xf15230cba5b211b7cb6a4ae7cfc5a84e9cb6865d', 'coop split 14=7+7')''')
     >>> db.sql('''insert into addrbook (addr, label)
-    ...           values ('0x4c8c0a6210fbb8678597a22772490ef53c42cfa9', 'new REV')''')
+    ...           values ('0x42c9625ea0b18a6d427048094a14476cf339cd31', 'coop split 7a')''')
     >>> db.sql('''insert into addrbook (addr, label)
-    ...           values ('0xc3a0f3d70cf1e614f734a951e9456e4eed7da2f4', 'new REV')''')
+    ...           values ('0xeb08e33fdbb693ac2fddd104de0b8a2ac56d6119', 'coop split 7b')''')
 
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0x4c8c0a6210fbb8678597a22772490ef53c42cfa9', 'mem A RHOC1')''')
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0xc3a0f3d70cf1e614f734a951e9456e4eed7da2f4', 'mem A RHOC2')''')
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0x5333e2064df92d85321ffdab03620f44481442b8', 'mem A REV')''')
+
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0x742ab73a29239d0bbdb8548d936f1325a58dd8fb', 'Research REV I')''')
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0xf6e07f4ae0961a143d164585fc5f134ec438a1ca', 'Research REV II')''')
+
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0xc9b2b0bbc1558d69fd285d31ee7897d9b808103a', 'Current op. REV')''')
+    >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0x6defba912a6664838eec10417c75d5270932d6c7', 'Reserve REV')''')
 
 And from etherscan
 
@@ -185,7 +204,7 @@ Now the top 10 are less obscure:
     pithia 3 19,499,000  0x62917a5bce92bc34bdc6b9254b3cc426d52752f3       2108874000000000
     pithia 4 1,000       0x62917a5bce92bc34bdc6b9254b3cc426d52752f3       2108874000000000
                          0x583c3bceb7b517acaeca84bce7c7266d7290a7aa       1483867335645073
-    new REV              0xf15230cba5b211b7cb6a4ae7cfc5a84e9cb6865d       1420881000000000
+    coop split 14=7+7    0xf15230cba5b211b7cb6a4ae7cfc5a84e9cb6865d       1420881000000000
                          0xbee7cce5b6e2eb556219eef8f3061aa9ff0630e9       1260711500000000
 
 
@@ -332,10 +351,18 @@ What are the RHOC and REV balances of scam addresses and other known addresses?
     0x44d37  pithia 9 6,466,991                               6466991.46410000     6466991.46410000                 0E-8
     0x44d37  pithia 10 1,000                                  6466991.46410000     6466991.46410000                 0E-8
     0x28755  Token Sale Wallet                               31176931.98495265                        -31176931.98495265
-    0x821aa  Research Wallet                                  4000000.00000000                         -4000000.00000000
-    0xf1523  new REV                                         14208810.00000000                        -14208810.00000000
-    0x4c8c0  new REV                                           783513.78500000                          -783513.78500000
-    0xc3a0f  new REV                                           203930.75599958                          -203930.75599958
+    0xb4c24  Token Sale REV                                                       31176931.98495260    31176931.98495260
+    0x821aa  Research Wallet RHOC                             4000000.00000000                         -4000000.00000000
+    0xf1523  coop split 14=7+7                               14208810.00000000                        -14208810.00000000
+    0x42c96  coop split 7a                                                         7104405.00000000     7104405.00000000
+    0xeb08e  coop split 7b                                                         7104405.00000000     7104405.00000000
+    0x4c8c0  mem A RHOC1                                       783513.78500000                          -783513.78500000
+    0xc3a0f  mem A RHOC2                                       203930.75599958                          -203930.75599958
+    0x5333e  mem A REV                                                              987444.54099958      987444.54099958
+    0x742ab  Research REV I                                                        3872000.00000000     3872000.00000000
+    0xf6e07  Research REV II                                                        128000.00000000      128000.00000000
+    0xc9b2b  Current op. REV                                                     135767221.20220800   135767221.20220800
+    0x6defb  Reserve REV                                                         262347004.13716800   262347004.13716800
     0x689c5  KuCoin 2                                        28826642.88573629    23816642.88573620    -5010000.00000009
     0x16829  RHOC ERC20                                         13745.04267036                           -13745.04267036
     0x00000  burn                                           129336426.00000000   129336426.00000000                 0E-8
@@ -364,51 +391,44 @@ The total of adjustments is the same ~12M validator bonds amount:
     total adj              -12317034.24000005
 
 
-Genesis REV Summary
-~~~~~~~~~~~~~~~~~~~
+Summary: RHOC to REV Taint adjustments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-I'm not sure about these results, as reported in
-`struggling to correlate some RHOC accounts to REV accounts issue 10 <https://github.com/rchain/rbalance/issues/10>`_.
+The total adjustments from tainted addresses is ~61M:
+
+    >>> db.sql('''
+    ... create view adj_taint as select * from adj
+    ... where addr in (select addr from taint)
+    ... ''');
+    >>> audit.show('{0:<20} {1:>20}',
+    ...            *db.query("select 'taint adj', sum(delta) from adj_taint"),
+    ...            decimals=8)
+    'taint adj'                    sum(delta)
+    taint adj              -60869258.35645082
+
+In detail:
 
     >>> audit.show('{0:<44} {1:>20} {2:>20} {3:>20}', decimals=8, *db.query('''
     ...   select coalesce(coalesce(bk.label, t.label) || ' ' || substr(adj.addr, 1, 7), adj.addr) addr
-    ...        , adj.bal_rhoc, adj.bal_rev, adj.delta from adj
+    ...        , adj.bal_rhoc, adj.bal_rev, adj.delta from adj_taint adj
     ...   left join addrbook bk on bk.addr = adj.addr
     ...   left join (select 'feb 11 taint' label, t.* from taint t) t on t.addr = adj.addr
     ...   order by abs(delta) desc, addr
     ... '''))
     addr                                                     bal_rhoc              bal_rev                delta
-    Reserve Wallet 0x1c73d                         274664038.37716800                       -274664038.37716800
-    0x6defba912a6664838eec10417c75d5270932d6c7                          262347004.13716800   262347004.13716800
-    0xc9b2b0bbc1558d69fd285d31ee7897d9b808103a                          135767221.20220800   135767221.20220800
-    Current operation 0xd35a2                       77932217.80308682                        -77932217.80308682
-    Token Sale Wallet 0x28755                       31176931.98495265                        -31176931.98495265
-    0xb4c242f379eed1f2a6cdbc1ca7466738f06793a5                           31176931.98495260    31176931.98495260
     pithia 3 19,499,000 0x62917                     21088740.00000000     1588740.00000000   -19500000.00000000
     pithia 4 1,000 0x62917                          21088740.00000000     1588740.00000000   -19500000.00000000
     feb 11 taint 0x583c3                            14838673.35645073                        -14838673.35645073
-    new REV 0xf1523                                 14208810.00000000                        -14208810.00000000
     pithia 7 8,936,500 0xaa9bd                       8927500.00000000                         -8927500.00000000
     pithia 8 1,000 0xaa9bd                           8927500.00000000                         -8927500.00000000
-    0x42c9625ea0b18a6d427048094a14476cf339cd31                            7104405.00000000     7104405.00000000
-    0xeb08e33fdbb693ac2fddd104de0b8a2ac56d6119                            7104405.00000000     7104405.00000000
     KuCoin 2 0x689c5                                28826642.88573629    23816642.88573620    -5010000.00000009
     RHOC Scam token 14 0x3198a                       4315002.00000000                         -4315002.00000000
     pithia 5 4,061,500 0xbdcbf                       5122041.08255400     1059541.08255400    -4062500.00000000
     pithia 6 1,000 0xbdcbf                           5122041.08255400     1059541.08255400    -4062500.00000000
-    Research Wallet 0x821aa                          4000000.00000000                         -4000000.00000000
-    0x742ab73a29239d0bbdb8548d936f1325a58dd8fb                            3872000.00000000     3872000.00000000
     RHOC Scam token 2 0xdcb05                        3400500.00000000                         -3400500.00000000
-    0x198eddaac45d28ec336df3443dfc5f23d16a8a52                            3000000.00000000     3000000.00000000
-    0x5333e2064df92d85321ffdab03620f44481442b8                             987444.54099958      987444.54099958
-    new REV 0x4c8c0                                   783513.78500000                          -783513.78500000
     feb 11 taint 0xfd9b2                              364784.00000000                          -364784.00000000
     feb 11 taint 0x5c13a                              300000.00000000                          -300000.00000000
-    new REV 0xc3a0f                                   203930.75599958                          -203930.75599958
     feb 11 taint 0x44948                              135299.00000000                          -135299.00000000
-    0xf6e07f4ae0961a143d164585fc5f134ec438a1ca                             128000.00000000      128000.00000000
-    0x95a110f5fcc7cec23e072840f15450817e5e6c90                              48000.00000000       48000.00000000
-    0x168296bb09e24a88805cb9c33356536b980d3fc5         13745.04267036                           -13745.04267036
     feb 11 taint 0x6e75b                               10000.00000000                           -10000.00000000
     RHOC Scam token 17 0xbbd93                          5000.00000000                            -5000.00000000
 
@@ -426,4 +446,49 @@ seems to be partly un-tainted:
     pithia 5 4,061,500                 5122041.08255400     1059541.08255400    -4062500.00000000     1059541.08260000
     pithia 6 1,000                     5122041.08255400     1059541.08255400    -4062500.00000000     1059541.08260000
     KuCoin 2                          28826642.88573629    23816642.88573620    -5010000.00000009    23826642.88570000
+
+
+Summary: RHOC to REV Non-taint adjustments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The non-taint adjustments total ~12M (bonds amount) less than the taint
+adjustments:
+
+    >>> db.sql('''
+    ... create view adj_coop as select * from adj
+    ... where addr not in (select addr from taint)
+    ... ''');
+    >>> audit.show('{0:<20} {1:>20}',
+    ...            *db.query("select 'taint adj', sum(delta) from adj_coop"),
+    ...            decimals=8)
+    'taint adj'                    sum(delta)
+    taint adj               48552224.11645077
+
+The non-taint adjustments in detail are:
+
+    >>> audit.show('{0:<44} {1:>20} {2:>20} {3:>20}', decimals=8, *db.query('''
+    ...   select coalesce(coalesce(bk.label, t.label) || ' ' || substr(adj.addr, 1, 7), adj.addr) addr
+    ...        , adj.bal_rhoc, adj.bal_rev, adj.delta from adj_coop adj
+    ...   left join addrbook bk on bk.addr = adj.addr
+    ...   left join (select 'feb 11 taint' label, t.* from taint t) t on t.addr = adj.addr
+    ...   order by abs(delta) desc, addr
+    ... '''))
+    addr                                                     bal_rhoc              bal_rev                delta
+    Reserve Wallet 0x1c73d                         274664038.37716800                       -274664038.37716800
+    Reserve REV 0x6defb                                                 262347004.13716800   262347004.13716800
+    Current op. REV 0xc9b2b                                             135767221.20220800   135767221.20220800
+    Current operation 0xd35a2                       77932217.80308682                        -77932217.80308682
+    Token Sale Wallet 0x28755                       31176931.98495265                        -31176931.98495265
+    Token Sale REV 0xb4c24                                               31176931.98495260    31176931.98495260
+    coop split 14=7+7 0xf1523                       14208810.00000000                        -14208810.00000000
+    coop split 7a 0x42c96                                                 7104405.00000000     7104405.00000000
+    coop split 7b 0xeb08e                                                 7104405.00000000     7104405.00000000
+    Research Wallet RHOC 0x821aa                     4000000.00000000                         -4000000.00000000
+    Research REV I 0x742ab                                                3872000.00000000     3872000.00000000
+    0x198eddaac45d28ec336df3443dfc5f23d16a8a52                            3000000.00000000     3000000.00000000
+    mem A REV 0x5333e                                                      987444.54099958      987444.54099958
+    mem A RHOC1 0x4c8c0                               783513.78500000                          -783513.78500000
+    mem A RHOC2 0xc3a0f                               203930.75599958                          -203930.75599958
+    Research REV II 0xf6e07                                                128000.00000000      128000.00000000
+    0x95a110f5fcc7cec23e072840f15450817e5e6c90                              48000.00000000       48000.00000000
     RHOC ERC20 0x16829                                 13745.04267036                           -13745.04267036
