@@ -282,8 +282,9 @@ The top 10 are the same, right?
 How does the snapshot supply compare to the genesis supply? A
 `Feb 14 msg from @ian <https://discordapp.com/channels/375365542359465989/454113117257859073/677958046437212210>`_
 says, "12,317.034.24 RHOC is missing from wallets.txt because it is in
-the bonds file (validators)". He seems to be off by 0.00000005 REV;
-close enough:
+the bonds file (validators)". This is off by 0.00000005 REV due
+to a difference between the Token Sale Wallet RHOC wallet 0x28755
+and the REV wallet 0xb4c2.
 
     >>> audit.show('{0:<20} {1:>20} {2:>20} {3:>20}', *db.query('''
     ... select 'supply', tot_rhoc, tot_rev, tot_rev - tot_rhoc delta
