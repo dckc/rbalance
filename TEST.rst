@@ -166,6 +166,8 @@ And from etherscan
     >>> db.sql('''insert into addrbook (addr, label)
     ...           values ('0x689c56aef474df92d44a1b70850f808488f9769c', 'KuCoin 2')''')
     >>> db.sql('''insert into addrbook (addr, label)
+    ...           values ('0x168296bb09e24a88805cb9c33356536b980d3fc5', 'RHOC ERC20')''')
+    >>> db.sql('''insert into addrbook (addr, label)
     ...           values ('0x0000000000000000000000000000000000000000', 'burn')''')
 
 Now the top 10 are less obscure:
@@ -336,6 +338,7 @@ What are the RHOC and REV balances of scam addresses and other known addresses?
     0x4c8c0  new REV                                           783513.78500000                          -783513.78500000
     0xc3a0f  new REV                                           203930.75599958                          -203930.75599958
     0x689c5  KuCoin 2                                        28826642.88573629    23816642.88573620    -5010000.00000009
+    0x16829  RHOC ERC20                                         13745.04267036                           -13745.04267036
     0x00000  burn                                           129336426.00000000   129336426.00000000                 0E-8
 
 How do genesis balances differ from snapshot balances?
@@ -424,3 +427,4 @@ seems to be partly un-tainted:
     pithia 5 4,061,500                 5122041.08255400     1059541.08255400    -4062500.00000000     1059541.08260000
     pithia 6 1,000                     5122041.08255400     1059541.08255400    -4062500.00000000     1059541.08260000
     KuCoin 2                          28826642.88573629    23816642.88573620    -5010000.00000009    23826642.88570000
+    RHOC ERC20 0x16829                                 13745.04267036                           -13745.04267036
